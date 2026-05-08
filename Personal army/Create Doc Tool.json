@@ -1,0 +1,145 @@
+{
+  "name": "Create Doc Tool",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "title"
+            },
+            {
+              "name": "content"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -128,
+        -96
+      ],
+      "id": "374bfc33-a8fa-45f8-b848-5f9d22c1e874",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "folderId": "1dgxFHKKunJbtvJl7nDjqSddlG2UROu3E",
+        "title": "={{ $json.title }}"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        80,
+        -96
+      ],
+      "id": "31e3f5a6-1db4-49f8-8795-1f7dd84d8ad8",
+      "name": "Create a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "y8FGwddEyTru50cA",
+          "name": "Google Docs account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $('When Executed by Another Workflow').item.json.content }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        288,
+        -96
+      ],
+      "id": "889a2d26-9798-4e84-96ba-348263acae64",
+      "name": "Update a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "y8FGwddEyTru50cA",
+          "name": "Google Docs account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5472c0d3-d715-4bab-bd49-e1b8e7b82750",
+              "name": "response",
+              "value": "=Your {{ $('When Executed by Another Workflow').item.json.title }} document has been created. \n\nHere is the link in Google drive: https://drive.google.com/file/d/{{ $json.documentId }}/view?usp=sharing",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        496,
+        -96
+      ],
+      "id": "eab29c46-f91b-4393-aebe-240a84e9129f",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Create a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a document": {
+      "main": [
+        [
+          {
+            "node": "Update a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a document": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fdd73dfa-f8f4-4cbd-9116-c4ac33444f5b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "95e5a8c2e51c83e33b232ea792bbe3f063c094c33d9806a5565cb31759e1ad39"
+  },
+  "id": "KWsy9aPUNkLxzMPV",
+  "tags": []
+}

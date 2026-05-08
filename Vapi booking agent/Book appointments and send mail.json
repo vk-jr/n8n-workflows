@@ -1,0 +1,408 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lowcode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -352,
+        -176
+      ],
+      "id": "191a94d7-833a-4eeb-9681-26eb47bb209a",
+      "name": "Webhook",
+      "webhookId": "2ea637ac-fbdc-49db-a118-50bd1051dc45"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Caller Number:\n{{ $('Webhook').item.json.body.message.customer.number }}\n\nCall Transcript :\n{{ $('Webhook').item.json.body.message.artifact.transcript }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=This is the Current time in India: {{ $json.currentDate }}\nYou are an after call analysis and message crafter agent.\n\nPrecisely get the time of the meeting requested by the person for the call in calendar compatible format.\nGive a message output in 100 words or less to let them know that the meet has been scheduled and we will be seeing them there.\n\nAlso output description of the reason to meet and title.\n\nMake sure you correctly interpret today and tomorrow and similar wordings based of the current time provided.\n\nAlso get the phone number from the transcript or the provided data you shall be given to analyze\nIf the country or country code for phone number is not given or mentioned in the transcript, assume it is India.\n\nIf the person gives phone number in transcript or over the call, prioritize that over the number used to make the call, output only 1 number the SMS should be detailed and well signed off if the person is genuinely interested in booking the call then output \n\nYes else No, nothing else as output.\n\nAssume all phone numbers to be Indian using India country code until explicitly stated by the person on the call that it is from another country.\n+91\nI"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        16,
+        -176
+      ],
+      "id": "226c9049-0bcb-4080-874a-aad23704a68e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {
+          "timezone": "Asia/Kolkata"
+        }
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        -176
+      ],
+      "id": "39f73954-37f3-4483-a3e8-2ab1afe8887f",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\"Time\": \"When the appointment is set\",\n\"End_time\": \"30 min after the start time\",\n\"Message for SMS\": \"An SMS message to send to the person\",\n\"Description\": \"why he wants to setup a meeting.\",\n\"Phone_Number\": \"The number called using\",\n\"Title\": \"of the meeting\",\n\"name\":\"name of the caller\",\n\"randomemail\":\"randomly generated email with numbers, etc\",\n\"Interested_to_book_call\":\"Yes/No\",\n  \"Note\": \"A short note about caller well formatted if the person can be called again or followed up with, concerning only vital info\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        16
+      ],
+      "id": "1c0317ab-cde9-4355-9249-7f278cf774fb",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -64,
+        48
+      ],
+      "id": "bd797144-f14b-46b1-89c2-71ea469fab7c",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "2KMXqBbx9xLXmlT4",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1MOaalNVNaQc-6rQcdjSGVX0DuIU0W655Ct2gcGi3umg",
+          "mode": "list",
+          "cachedResultName": "LowCode Booking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MOaalNVNaQc-6rQcdjSGVX0DuIU0W655Ct2gcGi3umg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MOaalNVNaQc-6rQcdjSGVX0DuIU0W655Ct2gcGi3umg/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Time": "={{ $json.output.Time }}",
+            "End_time": "={{ $json.output.End_time }}",
+            "Message": "={{ $json.output['Message for SMS'] }}",
+            "Phone_Number": "={{ $json.output.Phone_Number }}",
+            "Title": "={{ $json.output.Title }}",
+            "name": "={{ $json.output.name }}",
+            "randomemail": "={{ $json.output.randomemail }}",
+            "Interested_to_book_call": "={{ $json.output.Interested_to_book_call }}",
+            "Note": "={{ $json.output.Note }}",
+            "Description": "={{ $json.output.Description }}",
+            "SMS": "={{ $json.output['Message for SMS'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "End_time",
+              "displayName": "End_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "SMS",
+              "displayName": "SMS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Phone_Number",
+              "displayName": "Phone_Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "randomemail",
+              "displayName": "randomemail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Interested_to_book_call",
+              "displayName": "Interested_to_book_call",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Note",
+              "displayName": "Note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        320,
+        -176
+      ],
+      "id": "6e7a3f6c-37a6-4184-b9d1-7022d908a3d6",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cZT94GKlahm3Jo7a",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cbcacf4b-4357-463e-a0b9-2ebe002c9c62",
+              "leftValue": "={{ $json.Interested_to_book_call }}",
+              "rightValue": "Yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        496,
+        -176
+      ],
+      "id": "7be094d1-da1f-41ee-a729-61c640617267",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "rahulvk371@gmail.com, amanxavier@gmail.com, danystephen@gmail.com",
+        "subject": "New appointment",
+        "emailType": "text",
+        "message": "=You have a new appointment scheduled for our company. Please review the details and be prepared.",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "LowCodeAI"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        720,
+        -272
+      ],
+      "id": "c8930ea8-6db7-4a4c-90a3-226fc6639251",
+      "name": "Send a message",
+      "webhookId": "0ce9dc9e-82e9-4491-a5f9-2dcacbc223bf",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "FbO4iYiECmHNX4wT",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7cd90b8d-f763-401e-a92e-df7c67d91870",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ea1fe655b307855c28b6328df20e1d82406ba38285e4e604b833c57ef1e59a7b"
+  },
+  "id": "Va6GBZVgZY4RLFiH",
+  "tags": []
+}

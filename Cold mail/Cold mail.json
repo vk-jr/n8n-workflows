@@ -1,0 +1,518 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -816,
+        320
+      ],
+      "id": "d2038202-b23e-4a36-9fd5-2137dd020d01",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fdc40194-662b-402b-b731-6405ce91259e",
+              "leftValue": "={{ $json[\"Send Status\"] }}",
+              "rightValue": "SENT",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -384,
+        320
+      ],
+      "id": "eb5394c1-8839-41f5-9e9f-aadc25b90e98",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -160,
+        304
+      ],
+      "id": "7cb3ddfb-6473-4360-8b2a-bade2f6d2f0c",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "const templates = items.map(item => item.json);\n\nif (!templates.length) {\n  throw new Error('No templates found');\n}\n\nconst randomIndex = Math.floor(Math.random() * templates.length);\nconst template = templates[randomIndex];\n\n// Use exact keys matching your input JSON: SUBJECT, BODY\nconst subject = template.Subject || '';\nconst body = template.Body ? template.Body.replace(/\\r?\\n/g, '<br>') : '';\n\nreturn [\n  {\n    json: {\n      Subject: subject,\n      Body: body\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        128
+      ],
+      "id": "4b7cda86-dde4-488f-b554-a57f59b7714b",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        512,
+        208
+      ],
+      "id": "c9a09184-da21-43fa-b82a-71cf8caf6fd4",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f6a6ba02-422b-4e7c-a73e-03901cc2db0c",
+              "name": "BODY",
+              "value": "={{ $json.Body.replace(\"[name]\", $json[\"Name\"] && $json[\"Name\"].trim() !== '' ? $json[\"Name\"].trim() : \"there\") }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        208
+      ],
+      "id": "bd44f859-1ad7-49b0-9f30-b06282e78d68",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        1104,
+        144
+      ],
+      "id": "63246bcd-5bb0-401f-a5ff-edcd345a3e3e",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1168,
+        400
+      ],
+      "id": "0ee8ff09-5061-4c60-8953-b8afb3687cbb",
+      "name": "Wait",
+      "webhookId": "59d0e464-9eef-4147-9d07-e283193ed822"
+    },
+    {
+      "parameters": {
+        "content": "   ## Get Leads Data From Google Sheet",
+        "height": 320,
+        "width": 380
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -624,
+        208
+      ],
+      "typeVersion": 1,
+      "id": "bd40239b-a98d-4c78-9f3e-95e67d4fc0c4",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Get Email Templates From Google Sheet\n",
+        "height": 300,
+        "width": 420
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        32
+      ],
+      "typeVersion": 1,
+      "id": "1f9f480d-4345-47cf-95ea-f050c5e2c8c1",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Log The Status",
+        "height": 280,
+        "width": 300
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1248,
+        64
+      ],
+      "typeVersion": 1,
+      "id": "7b2117de-0d94-498e-881f-31a37e239466",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "17D1toGaSsvABVqjNjcAv8XEYmxPWu4T8kfScvHNIpC4",
+          "mode": "list",
+          "cachedResultName": "Cold mail",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17D1toGaSsvABVqjNjcAv8XEYmxPWu4T8kfScvHNIpC4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17D1toGaSsvABVqjNjcAv8XEYmxPWu4T8kfScvHNIpC4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -592,
+        320
+      ],
+      "id": "a3266ddd-5f1f-432b-bf56-317d1068198c",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YzqRWNZci2r8MFOQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "17D1toGaSsvABVqjNjcAv8XEYmxPWu4T8kfScvHNIpC4",
+          "mode": "list",
+          "cachedResultName": "Cold mail",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17D1toGaSsvABVqjNjcAv8XEYmxPWu4T8kfScvHNIpC4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 485358545,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17D1toGaSsvABVqjNjcAv8XEYmxPWu4T8kfScvHNIpC4/edit#gid=485358545"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        64,
+        128
+      ],
+      "id": "8ea2a623-68c9-490e-a3c6-98626e0c16b6",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YzqRWNZci2r8MFOQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "17D1toGaSsvABVqjNjcAv8XEYmxPWu4T8kfScvHNIpC4",
+          "mode": "list",
+          "cachedResultName": "Cold mail",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17D1toGaSsvABVqjNjcAv8XEYmxPWu4T8kfScvHNIpC4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17D1toGaSsvABVqjNjcAv8XEYmxPWu4T8kfScvHNIpC4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $json.Email }}",
+            "Send Status": "={{ $json.labelIds[0] }}",
+            "Time": "={{ new Date().toLocaleTimeString(\"en-GB\", { timeZone: \"Asia/Kolkata\", hour12: false }) }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Send Status",
+              "displayName": "Send Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Time",
+              "displayName": "Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        1344,
+        144
+      ],
+      "id": "853f2e5b-3ba1-46f3-a98b-5926066197c1",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YzqRWNZci2r8MFOQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "={{ $json.Subject }}",
+        "message": "={{ $json.BODY }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Rahul"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        944,
+        288
+      ],
+      "id": "949f8364-907c-4def-8c17-0fbe250659c1",
+      "name": "Send a message",
+      "webhookId": "3fbf6bf1-efca-44a5-8ed0-8e0fb1d4143f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "v4kyccD4kqrIjcZT",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5106776c-d843-486d-beb3-89a988e34917",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ddea072a411c20dda97fef922327e99854494436cced62b8619cd18186fbcb67"
+  },
+  "id": "QIiPEbSS8vsTwtF1",
+  "tags": []
+}

@@ -1,0 +1,1777 @@
+{
+  "name": "Automate Weekly SEO Report with AI Insights (Melvin)",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9941e108-1e6c-4050-8401-9e6125a847de",
+              "name": "site_url",
+              "type": "string",
+              "value": "https://a2b.services/"
+            },
+            {
+              "id": "06978aeb-e021-4b59-8a42-4225857d7778",
+              "name": "date_start",
+              "type": "string",
+              "value": "={{ $now.minus(1,'month').format('yyyy-LL-dd') }}"
+            },
+            {
+              "id": "780c04e5-5e2d-4a0c-9629-8d7ea7a4be8c",
+              "name": "date_end",
+              "type": "string",
+              "value": "={{ $now.format('yyyy-LL-dd') }}"
+            },
+            {
+              "id": "66e78b2a-965e-4e44-a88b-d31338175fe2",
+              "name": "date_prev_month_start",
+              "type": "string",
+              "value": "={{ $now.minus(2,'month').minus(1,'day').format('yyyy-LL-dd') }}"
+            },
+            {
+              "id": "332eae7c-0318-4cdc-a924-0f5b1ed22dbf",
+              "name": "date_prev_month_end",
+              "type": "string",
+              "value": "={{ $now.minus(1,'month').minus(1,'day').format('yyyy-LL-dd') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ba7fd7df-9f49-4982-affb-7dc6cb7f0c88",
+      "name": "Configuration",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -544,
+        1072
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "content": "# SEO Report Workflow\n\n**This workflow has the following sequence:**\n1. Time trigger (e.g. every Monday at 8 a.m.)\n2. Retrieval of Google Search Console data from the last month and previous month (or any period you want)\n3. Format it and generate AI insight of the data\n4. Transform it into a PDF report using pdforge (Using the pre-made SEO Report Template)\n5. Sending the report as a Slack Message (You can change it to send an e-mail, whatsapp or telegram message)\n\n\n**The following accesses are required for the workflow:**\n- Google Oauth2 (via Google Console API): [Documentation](https://docs.n8n.io/integrations/builtin/credentials/google/oauth-generic)\n- pdforge account: [Create here](https://app.pdforge.com/auth/sign-up)\n- AI API access (e.g. via OpenAI, Anthropic, Google or Ollama)\n\n\n# Created by [Rahul](https://www.linkedin.com/in/rahul-v-k/)\n",
+        "height": 512,
+        "width": 420
+      },
+      "id": "62b00fca-f936-4095-9aa1-a3bc65365f58",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -912,
+        288
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "**Here you'll configure:**\n- Site URL\n- Date range",
+        "height": 320,
+        "width": 284,
+        "color": 4
+      },
+      "id": "c08fe458-4a63-4904-9160-6eb429ad9f0c",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -640,
+        944
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "id": "020df441-fa1e-4068-a60d-bc0f7ce385a5",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        1264,
+        1216
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "Jto7I9JQWdCa3Gnl",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const base = $(\"Format data\").first().json\n\nreturn {\n      ...base,                                           \n      insights_content:     $json.output,\n      site_url:             $('Configuration').first().json.site_url,\n    };"
+      },
+      "id": "8295ab53-7bec-4f29-8dda-bbc090033da9",
+      "name": "Generate variables",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1680,
+        1024
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "8ea28ea6-4b09-4225-9b36-71915a935fcf",
+      "name": "Weekly at monday 8am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -912,
+        1072
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "rows",
+        "options": {}
+      },
+      "id": "12c09d6f-3bc1-4c6a-88ee-205e1adb0181",
+      "name": "Split Out Pages - Previous month",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        160,
+        1888
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bcec450e-ca15-42e9-9644-b4e8c49d8ffb",
+              "name": "query",
+              "type": "string",
+              "value": "={{ $json.keys[0] }}"
+            },
+            {
+              "id": "5db89e4b-3694-4471-b43a-2a45862c61cc",
+              "name": "clicks",
+              "type": "string",
+              "value": "={{ $json.clicks }}"
+            },
+            {
+              "id": "fba7ee18-7d4e-4ad7-bb0d-aa651eea9490",
+              "name": "impressions",
+              "type": "string",
+              "value": "={{ $json.impressions }}"
+            },
+            {
+              "id": "6a1b6b46-464e-4fd0-9faa-abfec6d9729c",
+              "name": "ctr",
+              "type": "string",
+              "value": "={{ $json.ctr }}"
+            },
+            {
+              "id": "7770d1e7-d892-4598-9a20-c5fef76adcf4",
+              "name": "position",
+              "type": "string",
+              "value": "={{ $json.position }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "787cb1f7-b466-471b-bcfa-08bd72bc3cd9",
+      "name": "Format Query - Previous month",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        384,
+        1696
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "rows",
+        "options": {}
+      },
+      "id": "fbcad098-384d-48b0-b175-b1be54079654",
+      "name": "Split Out Date",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        160,
+        544
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d94b7a08-4e03-4f4d-8f8c-9200632305a5",
+              "name": "date",
+              "type": "string",
+              "value": "={{ $json.keys[0] }}"
+            },
+            {
+              "id": "5db89e4b-3694-4471-b43a-2a45862c61cc",
+              "name": "clicks",
+              "type": "string",
+              "value": "={{ $json.clicks }}"
+            },
+            {
+              "id": "fba7ee18-7d4e-4ad7-bb0d-aa651eea9490",
+              "name": "impressions",
+              "type": "string",
+              "value": "={{ $json.impressions }}"
+            },
+            {
+              "id": "6a1b6b46-464e-4fd0-9faa-abfec6d9729c",
+              "name": "ctr",
+              "type": "string",
+              "value": "={{ $json.ctr }}"
+            },
+            {
+              "id": "7770d1e7-d892-4598-9a20-c5fef76adcf4",
+              "name": "position",
+              "type": "string",
+              "value": "={{ $json.position }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "96f1382b-5de3-4165-af0e-a3d7a09e3f24",
+      "name": "Format Date",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        384,
+        544
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "rows",
+        "options": {}
+      },
+      "id": "5918ed7e-24d5-4349-8f03-424d6e624087",
+      "name": "Split Out Overview",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        160,
+        352
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5db89e4b-3694-4471-b43a-2a45862c61cc",
+              "name": "clicks",
+              "type": "string",
+              "value": "={{ $json.clicks }}"
+            },
+            {
+              "id": "fba7ee18-7d4e-4ad7-bb0d-aa651eea9490",
+              "name": "impressions",
+              "type": "string",
+              "value": "={{ $json.impressions }}"
+            },
+            {
+              "id": "6a1b6b46-464e-4fd0-9faa-abfec6d9729c",
+              "name": "ctr",
+              "type": "string",
+              "value": "={{ $json.ctr }}"
+            },
+            {
+              "id": "7770d1e7-d892-4598-9a20-c5fef76adcf4",
+              "name": "position",
+              "type": "string",
+              "value": "={{ $json.position }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "eeadfde6-6d02-4c65-b70a-d1c6128b0c21",
+      "name": "Format Overview",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        384,
+        352
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "rows",
+        "options": {}
+      },
+      "id": "db774386-bf85-4ac0-97b8-8518a01dbe9e",
+      "name": "Split Out Pages",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        160,
+        928
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "rows",
+        "options": {}
+      },
+      "id": "24bcc57f-bd07-4736-8f9f-6294703429ea",
+      "name": "Split Out Devices",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        160,
+        1120
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d94b7a08-4e03-4f4d-8f8c-9200632305a5",
+              "name": "device",
+              "type": "string",
+              "value": "={{ $json.keys[0] }}"
+            },
+            {
+              "id": "5db89e4b-3694-4471-b43a-2a45862c61cc",
+              "name": "clicks",
+              "type": "string",
+              "value": "={{ $json.clicks }}"
+            },
+            {
+              "id": "fba7ee18-7d4e-4ad7-bb0d-aa651eea9490",
+              "name": "impressions",
+              "type": "string",
+              "value": "={{ $json.impressions }}"
+            },
+            {
+              "id": "6a1b6b46-464e-4fd0-9faa-abfec6d9729c",
+              "name": "ctr",
+              "type": "string",
+              "value": "={{ $json.ctr }}"
+            },
+            {
+              "id": "7770d1e7-d892-4598-9a20-c5fef76adcf4",
+              "name": "position",
+              "type": "string",
+              "value": "={{ $json.position }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0a8ba7a4-c02f-4470-a30b-393545ea2914",
+      "name": "Format Devices",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        384,
+        1120
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "rows",
+        "options": {}
+      },
+      "id": "42fdea7a-cca2-4b68-959a-a95ed8f54033",
+      "name": "Split Out Country",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        160,
+        1312
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d94b7a08-4e03-4f4d-8f8c-9200632305a5",
+              "name": "country",
+              "type": "string",
+              "value": "={{ $json.keys[0] }}"
+            },
+            {
+              "id": "5db89e4b-3694-4471-b43a-2a45862c61cc",
+              "name": "clicks",
+              "type": "string",
+              "value": "={{ $json.clicks }}"
+            },
+            {
+              "id": "fba7ee18-7d4e-4ad7-bb0d-aa651eea9490",
+              "name": "impressions",
+              "type": "string",
+              "value": "={{ $json.impressions }}"
+            },
+            {
+              "id": "6a1b6b46-464e-4fd0-9faa-abfec6d9729c",
+              "name": "ctr",
+              "type": "string",
+              "value": "={{ $json.ctr }}"
+            },
+            {
+              "id": "7770d1e7-d892-4598-9a20-c5fef76adcf4",
+              "name": "position",
+              "type": "string",
+              "value": "={{ $json.position }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cd64cfd5-0f9f-4ba1-bff7-f2642dc827e1",
+      "name": "Format Country",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        384,
+        1312
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "rows",
+        "options": {}
+      },
+      "id": "16d483d1-6445-4db3-a6c6-85a72d9b2fb5",
+      "name": "Split Out Query",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        160,
+        736
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bcec450e-ca15-42e9-9644-b4e8c49d8ffb",
+              "name": "query",
+              "type": "string",
+              "value": "={{ $json.keys[0] }}"
+            },
+            {
+              "id": "5db89e4b-3694-4471-b43a-2a45862c61cc",
+              "name": "clicks",
+              "type": "string",
+              "value": "={{ $json.clicks }}"
+            },
+            {
+              "id": "fba7ee18-7d4e-4ad7-bb0d-aa651eea9490",
+              "name": "impressions",
+              "type": "string",
+              "value": "={{ $json.impressions }}"
+            },
+            {
+              "id": "6a1b6b46-464e-4fd0-9faa-abfec6d9729c",
+              "name": "ctr",
+              "type": "string",
+              "value": "={{ $json.ctr }}"
+            },
+            {
+              "id": "7770d1e7-d892-4598-9a20-c5fef76adcf4",
+              "name": "position",
+              "type": "string",
+              "value": "={{ $json.position }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7e6ee050-892e-4131-86b5-9ad66ac55a83",
+      "name": "Format Query",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        384,
+        736
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bcec450e-ca15-42e9-9644-b4e8c49d8ffb",
+              "name": "page",
+              "type": "string",
+              "value": "={{ $json.keys[0] }}"
+            },
+            {
+              "id": "5db89e4b-3694-4471-b43a-2a45862c61cc",
+              "name": "clicks",
+              "type": "string",
+              "value": "={{ $json.clicks }}"
+            },
+            {
+              "id": "fba7ee18-7d4e-4ad7-bb0d-aa651eea9490",
+              "name": "impressions",
+              "type": "string",
+              "value": "={{ $json.impressions }}"
+            },
+            {
+              "id": "6a1b6b46-464e-4fd0-9faa-abfec6d9729c",
+              "name": "ctr",
+              "type": "string",
+              "value": "={{ $json.ctr }}"
+            },
+            {
+              "id": "7770d1e7-d892-4598-9a20-c5fef76adcf4",
+              "name": "position",
+              "type": "string",
+              "value": "={{ $json.position }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fd783804-9f64-4e7f-a486-a7696afe1b1b",
+      "name": "Format Page - Previous month",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        384,
+        1888
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bcec450e-ca15-42e9-9644-b4e8c49d8ffb",
+              "name": "page",
+              "type": "string",
+              "value": "={{ $json.keys[0] }}"
+            },
+            {
+              "id": "5db89e4b-3694-4471-b43a-2a45862c61cc",
+              "name": "clicks",
+              "type": "string",
+              "value": "={{ $json.clicks }}"
+            },
+            {
+              "id": "fba7ee18-7d4e-4ad7-bb0d-aa651eea9490",
+              "name": "impressions",
+              "type": "string",
+              "value": "={{ $json.impressions }}"
+            },
+            {
+              "id": "6a1b6b46-464e-4fd0-9faa-abfec6d9729c",
+              "name": "ctr",
+              "type": "string",
+              "value": "={{ $json.ctr }}"
+            },
+            {
+              "id": "7770d1e7-d892-4598-9a20-c5fef76adcf4",
+              "name": "position",
+              "type": "string",
+              "value": "={{ $json.position }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b8d0ab03-34cb-41d2-a483-2b23f4a5a6e1",
+      "name": "Format Page",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        384,
+        928
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "rows",
+        "options": {}
+      },
+      "id": "4077d57d-8df2-4d02-9f00-a7d397408966",
+      "name": "Split Out Query - Previous month",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        160,
+        1696
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "rows",
+        "options": {}
+      },
+      "id": "5c000631-feb3-43ee-81df-c1d0d4a80a1b",
+      "name": "Split Out Overview - Previous month",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        160,
+        1504
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5db89e4b-3694-4471-b43a-2a45862c61cc",
+              "name": "clicks",
+              "type": "string",
+              "value": "={{ $json.clicks }}"
+            },
+            {
+              "id": "fba7ee18-7d4e-4ad7-bb0d-aa651eea9490",
+              "name": "impressions",
+              "type": "string",
+              "value": "={{ $json.impressions }}"
+            },
+            {
+              "id": "6a1b6b46-464e-4fd0-9faa-abfec6d9729c",
+              "name": "ctr",
+              "type": "string",
+              "value": "={{ $json.ctr }}"
+            },
+            {
+              "id": "7770d1e7-d892-4598-9a20-c5fef76adcf4",
+              "name": "position",
+              "type": "string",
+              "value": "={{ $json.position }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "14018699-0879-4e74-b2df-9c41faa32ca8",
+      "name": "Format Overview - Previous month",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        384,
+        1504
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pull each dataset using .all()\nconst overview        = $('Format Overview').all()[0].json;\nconst dateData        = $('Format Date').all().map(item => item.json);\nconst pageData        = $('Format Page').all().map(item => item.json);\nconst queryData       = $('Format Query').all().map(item => item.json);\nconst deviceData      = $(\"Format Devices\").all().map(item => item.json);\nconst countryData     = $('Format Country').all().map(item => item.json);\nconst overviewPrev    = $('Format Overview - Previous month').all()[0].json;\nconst queryPrevData   = $('Format Query - Previous month').all().map(item => item.json);\nconst pagePrevData    = $('Format Page - Previous month').all().map(item => item.json);\n\n\n// // Helper for subtitles\nfunction pctSubtitle(curr, prev) {\n  const diff  = curr - prev;\n  const arrow = diff >= 0 ? '↗' : '↘';\n  const col   = diff >= 0 ? 'green' : 'red';\n  const pct   = prev === 0 ? 'N/A' : Math.abs(diff / prev * 100).toFixed(1) + '%';\n  return `<p style='color:${col}'>${arrow} ${pct} vs last month</p>`;\n}\nfunction numSubtitle(curr, prev) {\n  const diff  = curr - prev;\n  const arrow = diff >= 0 ? '↗' : '↘';\n  const col   = diff >= 0 ? 'green' : 'red';\n  return `<p style='color:${col}'>${arrow} ${Math.abs(diff)} vs last month</p>`;\n}\n\n// helper to remove protocol+domain, leaving only the path\nfunction stripPath(url) {\n  return url.replace(/^https?:\\/\\/[^/]+/, '');\n}\n\n// just above your report definition, build a Set of previous-month queries:\nconst prevQueries = new Set(queryPrevData.map(q => q.query));\n\n// Build the output\nconst report = {\n  report_date: `${dateData[0].date} to ${dateData[dateData.length - 1].date}`,\n  overview: {\n    impressions: {\n      value:    overview.impressions,\n      subtitle: pctSubtitle(overview.impressions, overviewPrev.impressions),\n    },\n    clicks: {\n      value:    overview.clicks,\n      subtitle: pctSubtitle(overview.clicks,    overviewPrev.clicks),\n    },\n    average_ctr: {\n      value:    (parseFloat(overview.ctr)*100).toFixed(2)+\"%\",\n      subtitle: pctSubtitle(overview.ctr, overviewPrev.ctr),\n    },\n    average_position: {\n      value:    parseFloat(overview.position).toFixed(1),\n      subtitle: pctSubtitle(overview.position, overviewPrev.position),\n    },\n  },\n  performance: {\n    impressions: dateData.map(d => d.impressions),\n    clicks:      dateData.map(d => d.clicks),\n    labels:      dateData.map(d => d.date),\n  },\n  top_10_countries: {\n    clicks:  countryData.sort((a, b) => b.clicks - a.clicks).slice(0,10).map(d => parseInt(d.clicks)),\n    labels:  countryData.sort((a, b) => b.clicks - a.clicks).slice(0,10).map(d => d.country),\n  },\n  devices: {\n    clicks:  deviceData.sort((a, b) => b.clicks - a.clicks).slice(0,10).map(d => parseInt(d.clicks)),\n    labels:  deviceData.sort((a, b) => b.clicks - a.clicks).slice(0,10).map(d => d.device),\n  },\n  organic_keywords_ranking: {\n    top_3: {\n      value:    queryData.filter(q => q.position <= 3).length,\n      subtitle: numSubtitle(\n                   queryData.filter(q => q.position <= 3).length,\n                   queryPrevData.filter(q => q.position <= 3).length\n                ),\n    },\n    from_3_10: {\n      value:    queryData.filter(q => q.position >= 4 && q.position <= 10).length,\n      subtitle: numSubtitle(\n                   queryData.filter(q => q.position >= 4 && q.position <= 10).length,\n                   queryPrevData.filter(q => q.position >= 4 && q.position <= 10).length\n                ),\n    },\n    from_11_20: {\n      value:    queryData.filter(q => q.position >= 11 && q.position <= 20).length,\n      subtitle: numSubtitle(\n                   queryData.filter(q => q.position >= 11 && q.position <= 20).length,\n                   queryPrevData.filter(q => q.position >= 11 && q.position <= 20).length\n                ),\n    },\n    from_21_100: {\n      value:    queryData.filter(q => q.position >= 21).length,\n      subtitle: numSubtitle(\n                   queryData.filter(q => q.position >= 21).length,\n                   queryPrevData.filter(q => q.position >= 21).length\n                ),\n    },\n  },\n  top_10_pages: pageData\n  .sort((a, b) => b.clicks - a.clicks)\n  .slice(0,10)\n  .map(d => ({\n    page: `<strong>${stripPath(d.page)}</strong>`,\n    clicks: d.clicks,\n    impressions: d.impressions,\n    ctr: (parseFloat(d.ctr)*100).toFixed(2)+\"%\",\n    position: parseFloat(d.position).toFixed(1),\n  })),\n  top_10_keywords: queryData\n  .sort((a, b) => b.clicks - a.clicks)\n  .slice(0,10)\n  .map(d => ({\n    keyword: `<strong>${d.query}</strong>`,\n    clicks: d.clicks,\n    impressions: d.impressions,\n    ctr: (parseFloat(d.ctr)*100).toFixed(2)+\"%\",\n    position: parseFloat(d.position).toFixed(1),\n  })),\n  pages_who_lost_most_traffic_vs_last_month:pagePrevData\n  .map(prev => {\n    const curr = pageData.find(d => d.page === prev.page) || { clicks: 0 };\n    const delta = prev.clicks - curr.clicks;            // positive = clicks lost\n    return {\n      page: prev.page,\n      clicks: curr.clicks,\n      clicks_last_month: prev.clicks,\n      delta\n    };\n  })\n  .sort((a, b) => b.delta - a.delta)                   // highest drops first\n  .slice(0, 5)\n  .map(({ page, clicks, clicks_last_month, delta }) => ({\n    page: `<strong>${stripPath(page)}</strong></p>`,                             // removes protocol+domain\n    clicks,\n    clicks_last_month,\n    delta:\"-\"+delta\n  })),\n  top_5_new_keywords_last_month: queryData\n   // keep only queries not present last month\n  .filter(d => !prevQueries.has(d.query))\n  // sort by clicks descending\n  .sort((a, b) => b.clicks - a.clicks)\n  // take top 5\n  .slice(0, 5)\n  // format exactly like your other lists\n  .map(d => ({\n    keyword:    `<p style='max-width:180px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis'><strong>${d.query}</strong></p>`,\n    clicks:     d.clicks,\n    impressions:d.impressions,\n    ctr:         (parseFloat(d.ctr)*100).toFixed(2) + \"%\",\n    position:    parseFloat(d.position).toFixed(1),\n  }))\n};\nreport.ga_data = $('Get a report1').all().map(item => item.json);\nreturn [{ json: report }];"
+      },
+      "id": "65c05726-2a80-4e45-8ea3-9c8fa2d6f621",
+      "name": "Format data",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1136,
+        1024
+      ],
+      "executeOnce": false,
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "numberInputs": 10
+      },
+      "id": "a93da4db-019f-4a77-9355-fc63eae744bf",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        816,
+        928
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "content": "## To connect to Google OAuth2, you'll need to fill these information\n\n### Step 1: Enable & configure your Search Console API credentials\n\n\t**1.\tEnable the API**\n\t•\tIn the [Google Cloud Console](https://console.cloud.google.com/), enable the Search Console API for your project.\n\n\t**2.\tCreate an OAuth2 client**\n\t•\tUnder APIs & Services → Credentials, click Create Credentials → OAuth client ID.\n\t•\tSelect Web application, and add your n8n callback URL (e.g. https://<your-n8n-domain>/rest/oauth2-credential/callback).\n\t•\tNote the Client ID and Client Secret.\n\n\n### Step 2: Set up OAuth2 credentials in n8n\nIn n8n, go to Credentials → New → OAuth2.\nFill in:\n \t•\tAuth URI: https://accounts.google.com/o/oauth2/auth\n\t•\tAccess Token URI: https://oauth2.googleapis.com/token\n\t•\tClient ID: Copy from OAuth2 on Google Console\n\t•\tClient Secret: Copy from OAuth2 on Google Console\n\t•\tScope: https://www.googleapis.com/auth/webmasters.readonly\n\t•\tRedirect URI: n8n’s callback URL",
+        "height": 540,
+        "width": 580,
+        "color": 5
+      },
+      "id": "633c4e64-1859-4812-afd2-f25c3b4c3e94",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -976,
+        1440
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api.pdflayer.com/api/convert",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "document_html",
+              "value": "={{ $json.html }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "output.pdf"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2128,
+        1024
+      ],
+      "id": "3a00f236-6426-4ef0-876f-d4724c6fec52",
+      "name": "PDFLayer",
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "JfKlsBdFYeFqvtHj",
+          "name": "Query Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const report = items[0].json;\n\n/* =========================\n   STYLE VARIABLES\n   (Edit these to adjust colors, fonts, spacing)\n   ========================= */\nconst STYLE = {\n  // Layout\n  bg: \"#f3f4f6\",\n  container: \"#ffffff\",\n  containerRadius: \"10px\",\n  containerPadding: \"25px\",\n  outerPadding: \"30px\",\n  maxWidth: \"750px\",\n  font: \"Arial\",\n\n  // Text colors\n  text: \"#111827\",\n  sub: \"#6b7280\",\n  primary: \"#7c3aed\",\n\n  // Borders\n  border: \"#e5e7eb\",\n\n  // Table\n  tableHeaderBg: \"#f9fafb\",\n  tableFontSize: \"13px\",\n\n  // Insight cards\n  insightBorder: \"#e5e7eb\",\n  insightBg: \"#fafafa\",\n  insightTitleSize: \"14px\",\n  insightTitleColor: \"#111827\",\n  insightDescSize: \"13px\",\n  insightDescColor: \"#374151\",\n\n  // KPI cards\n  kpiLabelSize: \"11px\",\n  kpiValueSize: \"22px\",\n  kpiSubSize: \"11px\",\n  kpiRadius: \"10px\",\n  kpiPadding: \"14px\",\n\n  // GA table\n  gaFontSize: \"13px\",\n  gaTotalRowBg: \"#f3f4f6\",\n\n  // Section heading size\n  h2Size: \"18px\",\n  h3Size: \"16px\",\n\n  // Footer\n  footerSize: \"12px\",\n  footerLink: \"#7c3aed\"\n};\n\n/* KPI card colors (order: Clicks, Impressions, CTR, Position) */\nconst KPI_COLORS = [\n  { label: \"Clicks\",      color: \"#4285F4\" },\n  { label: \"Impressions\", color: \"#7E57C2\" },\n  { label: \"CTR\",         color: \"#009688\" },\n  { label: \"Position\",    color: \"#F9AB00\" }\n];\n\n/* Chart line colors */\nconst CHART_COLORS = {\n  impressions: \"#7E57C2\",\n  clicks: \"#4285F4\"\n};\n\n/* Country code → full name mapping */\nconst COUNTRY_MAP = {\n  AFG: \"Afghanistan\",\n  ALB: \"Albania\",\n  DZA: \"Algeria\",\n  AND: \"Andorra\",\n  AGO: \"Angola\",\n  ARG: \"Argentina\",\n  ARM: \"Armenia\",\n  AUS: \"Australia\",\n  AUT: \"Austria\",\n  AZE: \"Azerbaijan\",\n  BHS: \"Bahamas\",\n  BHR: \"Bahrain\",\n  BGD: \"Bangladesh\",\n  BRB: \"Barbados\",\n  BLR: \"Belarus\",\n  BEL: \"Belgium\",\n  BLZ: \"Belize\",\n  BEN: \"Benin\",\n  BTN: \"Bhutan\",\n  BOL: \"Bolivia\",\n  BIH: \"Bosnia and Herzegovina\",\n  BWA: \"Botswana\",\n  BRA: \"Brazil\",\n  BRN: \"Brunei\",\n  BGR: \"Bulgaria\",\n  BFA: \"Burkina Faso\",\n  BDI: \"Burundi\",\n  KHM: \"Cambodia\",\n  CMR: \"Cameroon\",\n  CAN: \"Canada\",\n  CPV: \"Cape Verde\",\n  CAF: \"Central African Republic\",\n  TCD: \"Chad\",\n  CHL: \"Chile\",\n  CHN: \"China\",\n  COL: \"Colombia\",\n  COM: \"Comoros\",\n  COG: \"Congo\",\n  COD: \"Congo (DRC)\",\n  CRI: \"Costa Rica\",\n  CIV: \"Ivory Coast\",\n  HRV: \"Croatia\",\n  CUB: \"Cuba\",\n  CYP: \"Cyprus\",\n  CZE: \"Czech Republic\",\n  DNK: \"Denmark\",\n  DJI: \"Djibouti\",\n  DMA: \"Dominica\",\n  DOM: \"Dominican Republic\",\n  ECU: \"Ecuador\",\n  EGY: \"Egypt\",\n  SLV: \"El Salvador\",\n  GNQ: \"Equatorial Guinea\",\n  ERI: \"Eritrea\",\n  EST: \"Estonia\",\n  SWZ: \"Eswatini\",\n  ETH: \"Ethiopia\",\n  FJI: \"Fiji\",\n  FIN: \"Finland\",\n  FRA: \"France\",\n  GAB: \"Gabon\",\n  GMB: \"Gambia\",\n  GEO: \"Georgia\",\n  DEU: \"Germany\",\n  GHA: \"Ghana\",\n  GRC: \"Greece\",\n  GRD: \"Grenada\",\n  GTM: \"Guatemala\",\n  GIN: \"Guinea\",\n  GNB: \"Guinea-Bissau\",\n  GUY: \"Guyana\",\n  HTI: \"Haiti\",\n  HND: \"Honduras\",\n  HUN: \"Hungary\",\n  ISL: \"Iceland\",\n  IND: \"India\",\n  IDN: \"Indonesia\",\n  IRN: \"Iran\",\n  IRQ: \"Iraq\",\n  IRL: \"Ireland\",\n  ISR: \"Israel\",\n  ITA: \"Italy\",\n  JAM: \"Jamaica\",\n  JPN: \"Japan\",\n  JOR: \"Jordan\",\n  KAZ: \"Kazakhstan\",\n  KEN: \"Kenya\",\n  KIR: \"Kiribati\",\n  KWT: \"Kuwait\",\n  KGZ: \"Kyrgyzstan\",\n  LAO: \"Laos\",\n  LVA: \"Latvia\",\n  LBN: \"Lebanon\",\n  LSO: \"Lesotho\",\n  LBR: \"Liberia\",\n  LBY: \"Libya\",\n  LIE: \"Liechtenstein\",\n  LTU: \"Lithuania\",\n  LUX: \"Luxembourg\",\n  MDG: \"Madagascar\",\n  MWI: \"Malawi\",\n  MYS: \"Malaysia\",\n  MDV: \"Maldives\",\n  MLI: \"Mali\",\n  MLT: \"Malta\",\n  MHL: \"Marshall Islands\",\n  MRT: \"Mauritania\",\n  MUS: \"Mauritius\",\n  MEX: \"Mexico\",\n  FSM: \"Micronesia\",\n  MDA: \"Moldova\",\n  MCO: \"Monaco\",\n  MNG: \"Mongolia\",\n  MNE: \"Montenegro\",\n  MAR: \"Morocco\",\n  MOZ: \"Mozambique\",\n  MMR: \"Myanmar\",\n  NAM: \"Namibia\",\n  NRU: \"Nauru\",\n  NPL: \"Nepal\",\n  NLD: \"Netherlands\",\n  NZL: \"New Zealand\",\n  NIC: \"Nicaragua\",\n  NER: \"Niger\",\n  NGA: \"Nigeria\",\n  PRK: \"North Korea\",\n  MKD: \"North Macedonia\",\n  NOR: \"Norway\",\n  OMN: \"Oman\",\n  PAK: \"Pakistan\",\n  PLW: \"Palau\",\n  PAN: \"Panama\",\n  PNG: \"Papua New Guinea\",\n  PRY: \"Paraguay\",\n  PER: \"Peru\",\n  PHL: \"Philippines\",\n  POL: \"Poland\",\n  PRT: \"Portugal\",\n  QAT: \"Qatar\",\n  ROU: \"Romania\",\n  RUS: \"Russia\",\n  RWA: \"Rwanda\",\n  KNA: \"Saint Kitts and Nevis\",\n  LCA: \"Saint Lucia\",\n  VCT: \"Saint Vincent and the Grenadines\",\n  WSM: \"Samoa\",\n  SMR: \"San Marino\",\n  STP: \"Sao Tome and Principe\",\n  SAU: \"Saudi Arabia\",\n  SEN: \"Senegal\",\n  SRB: \"Serbia\",\n  SYC: \"Seychelles\",\n  SLE: \"Sierra Leone\",\n  SGP: \"Singapore\",\n  SVK: \"Slovakia\",\n  SVN: \"Slovenia\",\n  SLB: \"Solomon Islands\",\n  SOM: \"Somalia\",\n  ZAF: \"South Africa\",\n  KOR: \"South Korea\",\n  SSD: \"South Sudan\",\n  ESP: \"Spain\",\n  LKA: \"Sri Lanka\",\n  SDN: \"Sudan\",\n  SUR: \"Suriname\",\n  SWE: \"Sweden\",\n  CHE: \"Switzerland\",\n  SYR: \"Syria\",\n  TWN: \"Taiwan\",\n  TJK: \"Tajikistan\",\n  TZA: \"Tanzania\",\n  THA: \"Thailand\",\n  TLS: \"Timor-Leste\",\n  TGO: \"Togo\",\n  TON: \"Tonga\",\n  TTO: \"Trinidad and Tobago\",\n  TUN: \"Tunisia\",\n  TUR: \"Turkey\",\n  TKM: \"Turkmenistan\",\n  TUV: \"Tuvalu\",\n  UGA: \"Uganda\",\n  UKR: \"Ukraine\",\n  ARE: \"United Arab Emirates\",\n  GBR: \"United Kingdom\",\n  USA: \"United States\",\n  URY: \"Uruguay\",\n  UZB: \"Uzbekistan\",\n  VUT: \"Vanuatu\",\n  VAT: \"Vatican City\",\n  VEN: \"Venezuela\",\n  VNM: \"Vietnam\",\n  YEM: \"Yemen\",\n  ZMB: \"Zambia\",\n  ZWE: \"Zimbabwe\"\n};\n\n/* =========================\n   HELPERS\n   ========================= */\nconst clean = (str) => String(str || '').replace(/\\n/g, '').replace(/\\s+/g, ' ');\n\nconst stripEllipsis = (val) => String(val || '')\n  .replace(/max-width:[^;]+;/g, '')\n  .replace(/overflow:hidden;/g, '')\n  .replace(/white-space:nowrap;/g, '')\n  .replace(/text-overflow:ellipsis;/g, '');\n\n/* FIX: only sanitize arrow-like glitch characters */\n/* FIX: sanitize arrow-like glitch characters and box/symbol artifacts */\n/* FIX: strip ALL non-ASCII symbols and replace with safe HTML arrows */\n/* FIX: strip ALL non-ASCII symbols EXCEPT bullet (•) and replace with safe HTML arrows */\nconst fixArrows = (text) => {\n  if (!text) return \"\";\n  let s = String(text);\n  // Detect direction before stripping\n  const hasUp = /[▲▴▵△⬆🔺↑⬈↗]/u.test(s) || /\\+/.test(s);\n  const hasDown = /[▼▾▿▽⬇🔻↓⬊↘]/u.test(s) || /\\-/.test(s);\n  // Strip ALL non-printable-ASCII characters EXCEPT bullet (•) U+2022\n  s = s.replace(/[^\\x20-\\x7E\\u2022]/g, \"\").replace(/\\s+/g, \" \").trim();\n  // Prepend a safe HTML arrow if we detected direction\n  if (hasUp) s = \"&#9650; \" + s;\n  else if (hasDown) s = \"&#9660; \" + s;\n  return s;\n};\n\n/* Sanitize insight text: strip glitchy chars but keep bullets, no arrow prepend */\nconst cleanInsightText = (text) => {\n  if (!text) return \"\";\n  return String(text)\n    .replace(/[^\\x20-\\x7E\\u2022]/g, \"\")\n    .replace(/\\s+/g, \" \")\n    .trim();\n};\n\nconst sortByClicksDesc = (arr) => {\n  return [...arr].sort((a, b) => Number(b.clicks || b.Clicks) - Number(a.clicks || a.Clicks));\n};\n\nconst fmtTime = (s) => {\n  const m = Math.floor(s / 60);\n  const sec = Math.round(s % 60);\n  return m > 0 ? m + \"m \" + sec + \"s\" : sec + \"s\";\n};\n\n/* =========================\n   FORMAT INSIGHTS\n   ========================= */\nconst formatInsights = (text) => {\n  if (!text) return \"\";\n  const cleaned = cleanInsightText(text);\n  const points = cleaned.split(\"\\u2022\").filter(p => p.trim() !== \"\");\n  return `\n    <div style=\"display:flex;flex-direction:column;gap:14px;\">\n      ${points.map(p => {\n        const parts = p.split(\":\");\n        const title = parts.shift();\n        const desc = parts.join(\":\");\n        return `\n          <div style=\"border:1px solid ${STYLE.insightBorder};border-radius:8px;padding:12px;background:${STYLE.insightBg};\">\n            <div style=\"font-weight:600;font-size:${STYLE.insightTitleSize};color:${STYLE.insightTitleColor};margin-bottom:4px;\">\n              ${title.trim()}\n            </div>\n            <div style=\"font-size:${STYLE.insightDescSize};color:${STYLE.insightDescColor};line-height:1.5;\">\n              ${desc.trim()}\n            </div>\n          </div>\n        `;\n      }).join('')}\n    </div>\n  `;\n};\n\n/* =========================\n   1. GSC KPI CARDS (Clicks, Impressions, CTR, Position)\n   ========================= */\n/* =========================\n   1. GSC KPI CARDS (Clicks, Impressions, CTR, Position)\n   ========================= */\nconst kpis = report.overview;\nconst kpiKeys = [\"clicks\",\"impressions\",\"average_ctr\",\"average_position\"];\n\n/* Extract arrow direction from subtitle text */\nconst getArrow = (subtitle) => {\n  const s = String(subtitle || '');\n  if (/[▲▴▵△⬆🔺↑⬈↗]/u.test(s)) return \"&#9650; \";\n  if (/[▼▾▿▽⬇🔻↓⬊↘]/u.test(s)) return \"&#9660; \";\n  return \"\";\n};\n\n/* Strip arrow chars from subtitle so they don't double up */\nconst stripArrowChars = (subtitle) => {\n  return String(subtitle || '')\n    .replace(/[▲▴▵△⬆🔺↑⬈↗▼▾▿▽⬇🔻↓⬊↘]/gu, \"\")\n    .replace(/\\s+/g, \" \")\n    .trim();\n};\n\nconst kpiCards = `\n<table width=\"100%\" style=\"margin-top:20px;\">\n<tr>\n${kpiKeys.map((key, i) => {\n  const arrow = getArrow(kpis[key].subtitle);\n  const cleanSub = stripArrowChars(kpis[key].subtitle);\n  return `\n<td style=\"padding:6px;width:25%;\">\n  <div style=\"border:1px solid ${KPI_COLORS[i].color}40;\n              background:${KPI_COLORS[i].color}10;\n              border-radius:${STYLE.kpiRadius};\n              padding:${STYLE.kpiPadding};\">\n    <div style=\"font-size:${STYLE.kpiLabelSize};color:${STYLE.sub};text-transform:uppercase;\">\n      ${KPI_COLORS[i].label}\n    </div>\n    <div style=\"font-size:${STYLE.kpiValueSize};font-weight:bold;color:${STYLE.text};margin-top:6px;\">\n      ${arrow}${kpis[key].value}\n    </div>\n    <div style=\"font-size:${STYLE.kpiSubSize};margin-top:6px;\">\n      ${cleanSub}\n    </div>\n  </div>\n</td>\n`;\n}).join('')}\n</tr>\n</table>\n`;\n\n/* =========================\n   2. INSIGHTS\n   ========================= */\nconst insightsSection = `\n<div style=\"margin-top:20px;\">\n  <h2 style=\"font-size:${STYLE.h2Size};\">Insights</h2>\n  ${formatInsights(report.insights_content)}\n</div>\n`;\n\n/* =========================\n   3. GOOGLE ANALYTICS (REAL DATA)\n   ========================= */\nconst gaItems = report.ga_data || [];\n\nconst gaRows = gaItems.map(item => ({\n  channel: item.sessionDefaultChannelGroup || \"Unknown\",\n  sessions: Number(item.sessions || 0),\n  engagementRate: Number(item.engagementRate || 0),\n  engagedSessions: Number(item.engagedSessions || 0),\n  avgSessionDuration: Number(item.averageSessionDuration || 0)\n}));\n\nconst gaTotals = gaRows.reduce((acc, r) => {\n  acc.sessions += r.sessions;\n  acc.engagedSessions += r.engagedSessions;\n  acc.avgSessionDuration += r.avgSessionDuration;\n  return acc;\n}, { sessions: 0, engagedSessions: 0, avgSessionDuration: 0 });\n\ngaTotals.engagementRate = gaTotals.sessions\n  ? (gaTotals.engagedSessions / gaTotals.sessions)\n  : 0;\n\nconst gaSection = `\n<div style=\"margin-top:25px;\">\n  <h2 style=\"font-size:${STYLE.h2Size};\">Google Analytics</h2>\n  <table width=\"100%\" style=\"border-collapse:collapse;margin-top:10px;font-size:${STYLE.gaFontSize};\">\n  <tr>\n  <th style=\"border:1px solid ${STYLE.border};background:${STYLE.tableHeaderBg};padding:8px;\">Channel</th>\n  <th style=\"border:1px solid ${STYLE.border};background:${STYLE.tableHeaderBg};padding:8px;\">Sessions</th>\n  <th style=\"border:1px solid ${STYLE.border};background:${STYLE.tableHeaderBg};padding:8px;\">Engaged Sessions</th>\n  <th style=\"border:1px solid ${STYLE.border};background:${STYLE.tableHeaderBg};padding:8px;\">Engagement Rate</th>\n  <th style=\"border:1px solid ${STYLE.border};background:${STYLE.tableHeaderBg};padding:8px;\">Avg Session Duration</th>\n  </tr>\n  ${gaRows.map(r => `\n  <tr>\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">${r.channel}</td>\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">${r.sessions}</td>\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">${r.engagedSessions}</td>\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">${(r.engagementRate * 100).toFixed(1)}%</td>\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">${fmtTime(r.avgSessionDuration)}</td>\n  </tr>`).join('')}\n  <tr style=\"font-weight:bold;background:${STYLE.gaTotalRowBg};\">\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">Total</td>\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">${gaTotals.sessions}</td>\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">${gaTotals.engagedSessions}</td>\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">${(gaTotals.engagementRate * 100).toFixed(1)}%</td>\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">${fmtTime(gaTotals.avgSessionDuration)}</td>\n  </tr>\n  </table>\n</div>\n`;\n\n/* =========================\n   4. GOOGLE SEARCH CONSOLE — Charts\n   ========================= */\nconst chartConfig = (label, labels, dataset, color) => {\n  return encodeURIComponent(JSON.stringify({\n    type: 'line',\n    data: {\n      labels,\n      datasets: [{\n        label,\n        data: dataset.map(Number),\n        borderColor: color,\n        backgroundColor: color,\n        fill: false\n      }]\n    }\n  }));\n};\n\nconst impressionsChart = `https://quickchart.io/chart?c=${chartConfig(\n  'Impressions',\n  report.performance.labels,\n  report.performance.impressions,\n  CHART_COLORS.impressions\n)}`;\n\nconst clicksChart = `https://quickchart.io/chart?c=${chartConfig(\n  'Clicks',\n  report.performance.labels,\n  report.performance.clicks,\n  CHART_COLORS.clicks\n)}`;\n\nconst chartsSection = `\n<div style=\"margin-top:25px;\">\n  <h2 style=\"font-size:${STYLE.h2Size};\">Google Search Console — Performance Trends</h2>\n  <img src=\"${impressionsChart}\" style=\"width:100%;margin-top:10px;\">\n  <img src=\"${clicksChart}\" style=\"width:100%;margin-top:15px;\">\n</div>\n`;\n\n/* =========================\n   4b. GSC — Data tables\n   ========================= */\nconst topPages = sortByClicksDesc(report.top_10_pages || []);\nconst topKeywords = sortByClicksDesc(report.top_10_keywords || []);\n\nconst devices = sortByClicksDesc(\n  (report.devices?.labels || []).map((d, i) => ({\n    Device: d,\n    Clicks: report.devices.clicks[i]\n  }))\n);\n\nconst countries = sortByClicksDesc(\n  (report.top_10_countries?.labels || []).map((c, i) => ({\n    Country: COUNTRY_MAP[c.toUpperCase()] || c,\n    Clicks: report.top_10_countries.clicks[i]\n  }))\n);\n\n/* TABLE HELPER */\nconst table = (title, rows, cols) => `\n<h3 style=\"margin-top:25px;font-size:${STYLE.h3Size};\">${title}</h3>\n<table width=\"100%\" style=\"border-collapse:collapse;font-size:${STYLE.tableFontSize};\">\n<tr>\n${cols.map(c => `<th style=\"border:1px solid ${STYLE.border};background:${STYLE.tableHeaderBg};padding:8px;\">${c}</th>`).join('')}\n</tr>\n${rows.map(r => `\n<tr>\n${cols.map(c => `<td style=\"border:1px solid ${STYLE.border};padding:8px;\">${stripEllipsis(r[c] || r[c.toLowerCase()] || '')}</td>`).join('')}\n</tr>`).join('')}\n</table>\n`;\n\n/* =========================\n   FINAL HTML ASSEMBLY\n   Order: KPI Cards → Insights → GA → GSC (charts + tables) → Footer\n   ========================= */\nlet html = `\n<div style=\"background:${STYLE.bg};padding:${STYLE.outerPadding};font-family:${STYLE.font};\">\n  <div style=\"max-width:${STYLE.maxWidth};margin:0 auto;background:${STYLE.container};padding:${STYLE.containerPadding};border-radius:${STYLE.containerRadius};border:1px solid ${STYLE.border};\">\n\n    <div style=\"text-align:center;\">\n      <h1 style=\"margin:0;color:${STYLE.primary};\">SEO Performance Report</h1>\n      <div style=\"color:${STYLE.sub};font-size:13px;margin-top:5px;\">${report.report_date}</div>\n      <div style=\"margin-top:4px;\"><a href=\"${report.site_url}\" style=\"color:${STYLE.primary};font-size:13px;text-decoration:none;\">${report.site_url.replace(/^https?:\\/\\//, '').replace(/\\/$/, '')}</a></div>\n    </div>\n\n    ${kpiCards}\n\n    ${insightsSection}\n\n    ${gaSection}\n\n    ${chartsSection}\n\n    ${table(\"Top Pages\", topPages, [\"Page\",\"Clicks\",\"Impressions\",\"CTR\",\"Position\"])}\n    ${table(\"Top Keywords\", topKeywords, [\"Keyword\",\"Clicks\",\"Impressions\",\"CTR\",\"Position\"])}\n    ${table(\"Devices\", devices, [\"Device\",\"Clicks\"])}\n    ${table(\"Top Countries\", countries, [\"Country\",\"Clicks\"])}\n\n    <div style=\"text-align:center;margin-top:30px;font-size:${STYLE.footerSize};color:${STYLE.sub};\">\n      Created by <a href=\"https://melvincv.com\" style=\"color:${STYLE.footerLink};text-decoration:none;\">Melvin C V</a>\n    </div>\n\n  </div>\n</div>\n`;\n\nhtml = clean(html);\n\nreturn [{ json: { html } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1904,
+        1024
+      ],
+      "id": "61ce9351-8062-4c2d-8787-bdae7add50e2",
+      "name": "Generate HTML report"
+    },
+    {
+      "parameters": {
+        "sendTo": "melrockz@live.com, melrockz@gmail.com",
+        "subject": "=SEO Report - {{ $('Configuration').item.json.site_url.extractDomain() }}",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "replyToSenderOnly": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2368,
+        1024
+      ],
+      "id": "d6808d51-1bb4-4c3a-b2b6-e78d08818581",
+      "name": "Send a message",
+      "webhookId": "fb12e54d-9667-4cba-92c2-ed77a8e47a2e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "BouIQFx76OLUsbcw",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://www.googleapis.com/webmasters/v3/sites/{{ encodeURIComponent($json.site_url.trim()) }}/searchAnalytics/query",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSearchConsoleOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"startDate\": \"{{ $json.date_start }}\",\n  \"endDate\": \"{{ $json.date_end }}\",\n  \"rowLimit\": 25\n} ",
+        "options": {}
+      },
+      "id": "9ba1020e-91c8-4c79-ac1c-7ad88c852dbb",
+      "name": "GSC - Overview",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -64,
+        352
+      ],
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSearchConsoleOAuth2Api": {
+          "id": "OCZk6AaipRWyP9Z1",
+          "name": "a2b"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://www.googleapis.com/webmasters/v3/sites/{{ encodeURIComponent($json.site_url.trim()) }}/searchAnalytics/query",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSearchConsoleOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"startDate\": \"{{ $json.date_start }}\",\n  \"endDate\": \"{{ $json.date_end }}\",\n  \"dimensions\": [\"date\"],\n  \"rowLimit\": 200\n} ",
+        "options": {}
+      },
+      "id": "a788f4de-d34b-4fa1-9958-e1a94d3e2f61",
+      "name": "GSC - Date",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -64,
+        544
+      ],
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSearchConsoleOAuth2Api": {
+          "id": "OCZk6AaipRWyP9Z1",
+          "name": "a2b"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://www.googleapis.com/webmasters/v3/sites/{{ encodeURIComponent($json.site_url.trim()) }}/searchAnalytics/query",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSearchConsoleOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"startDate\": \"{{ $json.date_start }}\",\n  \"endDate\": \"{{ $json.date_end }}\",\n  \"dimensions\": [\"page\"],\n  \"rowLimit\": 200\n} ",
+        "options": {}
+      },
+      "id": "b2c5fc12-d6ac-4a8f-8f89-f6d685f58832",
+      "name": "GSC - Pages",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -64,
+        928
+      ],
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSearchConsoleOAuth2Api": {
+          "id": "OCZk6AaipRWyP9Z1",
+          "name": "a2b"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://www.googleapis.com/webmasters/v3/sites/{{ encodeURIComponent($json.site_url.trim()) }}/searchAnalytics/query",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSearchConsoleOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"startDate\": \"{{ $json.date_start }}\",\n  \"endDate\": \"{{ $json.date_end }}\",\n  \"dimensions\": [\"query\"],\n  \"rowLimit\": 200\n} ",
+        "options": {}
+      },
+      "id": "604120c2-a105-4940-b5a6-48d439b1697d",
+      "name": "GSC - Queries",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -64,
+        736
+      ],
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSearchConsoleOAuth2Api": {
+          "id": "OCZk6AaipRWyP9Z1",
+          "name": "a2b"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://www.googleapis.com/webmasters/v3/sites/{{ encodeURIComponent($json.site_url.trim()) }}/searchAnalytics/query",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSearchConsoleOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"startDate\": \"{{ $json.date_start }}\",\n  \"endDate\": \"{{ $json.date_end }}\",\n  \"dimensions\": [\"device\"],\n  \"rowLimit\": 200\n} ",
+        "options": {}
+      },
+      "id": "cacbf2aa-8de7-4056-83f9-78360ca152bd",
+      "name": "GSC - Devices",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -64,
+        1120
+      ],
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSearchConsoleOAuth2Api": {
+          "id": "OCZk6AaipRWyP9Z1",
+          "name": "a2b"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://www.googleapis.com/webmasters/v3/sites/{{ encodeURIComponent($json.site_url.trim()) }}/searchAnalytics/query",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSearchConsoleOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"startDate\": \"{{ $json.date_start }}\",\n  \"endDate\": \"{{ $json.date_end }}\",\n  \"dimensions\": [\"country\"],\n  \"rowLimit\": 200\n} ",
+        "options": {}
+      },
+      "id": "1f2822f8-d012-4183-957e-d68887ecbd6d",
+      "name": "GSC - Countries",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -64,
+        1312
+      ],
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSearchConsoleOAuth2Api": {
+          "id": "OCZk6AaipRWyP9Z1",
+          "name": "a2b"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://www.googleapis.com/webmasters/v3/sites/{{ encodeURIComponent($json.site_url.trim()) }}/searchAnalytics/query",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSearchConsoleOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"startDate\": \"{{ $json.date_prev_month_start }}\",\n  \"endDate\": \"{{ $json.date_prev_month_end }}\",\n  \"rowLimit\": 200\n} ",
+        "options": {}
+      },
+      "id": "866bded0-01d7-4bac-986f-85d593ea3352",
+      "name": "GSC - Overview - Previous Month",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -64,
+        1504
+      ],
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSearchConsoleOAuth2Api": {
+          "id": "OCZk6AaipRWyP9Z1",
+          "name": "a2b"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://www.googleapis.com/webmasters/v3/sites/{{ encodeURIComponent($json.site_url.trim()) }}/searchAnalytics/query",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSearchConsoleOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"startDate\": \"{{ $json.date_prev_month_start }}\",\n  \"endDate\": \"{{ $json.date_prev_month_end }}\",\n  \"dimensions\": [\"query\"],\n  \"rowLimit\": 200\n} ",
+        "options": {}
+      },
+      "id": "37701654-93bd-41ab-9268-3868eb80805d",
+      "name": "GSC - Query - Previous Month",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -64,
+        1696
+      ],
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSearchConsoleOAuth2Api": {
+          "id": "OCZk6AaipRWyP9Z1",
+          "name": "a2b"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://www.googleapis.com/webmasters/v3/sites/{{ encodeURIComponent($json.site_url.trim()) }}/searchAnalytics/query",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSearchConsoleOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"startDate\": \"{{ $json.date_prev_month_start }}\",\n  \"endDate\": \"{{ $json.date_prev_month_end }}\",\n  \"dimensions\": [\"page\"],\n  \"rowLimit\": 200\n} ",
+        "options": {}
+      },
+      "id": "c5018a88-b6a7-41fe-86a0-b42e5eecdb84",
+      "name": "GSC - Pages - Previous month",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -64,
+        1888
+      ],
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSearchConsoleOAuth2Api": {
+          "id": "OCZk6AaipRWyP9Z1",
+          "name": "a2b"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ JSON.stringify($json) }}",
+        "options": {
+          "systemMessage": "=## Persona\n\nYou are a data-driven Search Console Insights Agent: concise, analytical, and focused on extracting clear, actionable insights from organic traffic data.\n\n## Objective\n\n* Ingest structured Search Console data (overview, performance, pages, keywords, devices, countries, and comparisons).\n* Produce a clear, structured “Insights” section in plain text.\n\n## Rules\n\n### Formatting\n\n* Output only plain text.\n* DO NOT return JSON.\n* DO NOT include the word \"Insight:\".\n* Use bullet points (•) or numbered points.\n* Provide 5–8 concise points (not a paragraph).\n\n### Content\n\nEach point MUST:\n\n1. Highlight one specific insight (trend, anomaly, or opportunity).\n2. Include relevant metrics (clicks, impressions, CTR, position, % change).\n3. Reference specific pages or keywords wherever possible.\n4. Include a brief interpretation (why this is happening).\n5. End with a clear, actionable recommendation.\n\n## What to Analyze\n\n### 1. Overall Performance\n\n* Changes in impressions, clicks, CTR, and average position vs last month.\n* Identify the most important growth or decline.\n\n### 2. Page-Level Insights\n\n* Pages with high impressions but low or zero clicks.\n* Pages losing traffic vs last month.\n* Pages with strong rankings but weak CTR.\n\n### 3. Keyword Insights\n\n* Top-performing keywords driving clicks.\n* Keywords with high impressions but low CTR (opportunity).\n* New keywords with potential.\n\n### 4. Trend Analysis\n\n* Identify spikes or drops in daily performance.\n* Highlight any noticeable traffic patterns.\n\n### 5. Audience & Device Insights\n\n* Top countries contributing traffic.\n* Device split insights (mobile vs desktop opportunities).\n\n## Writing Style\n\n* Use clear, professional, and direct English.\n* Avoid fluff; focus on signal over noise.\n* Be specific, not generic.\n* Keep each point to 1–2 sentences maximum.\n\n## Constraints\n\n* Do not hallucinate data; use only provided values.\n* Prioritize the most impactful insights.\n* Avoid repeating the same metric across multiple points unless necessary.\n* Ensure recommendations are practical and actionable.\n\n## Output Example\n\n• Impressions grew 42.5% (1626) and clicks rose 70% (34), but average position dropped to 7.2 (↓23.9%), indicating broader visibility but weaker rankings—focus on improving SEO for top pages.\n\n• The homepage (/) drives all clicks (34) with 1459 impressions, while /blog and /resources have high impressions but 0 clicks—optimize titles and meta descriptions to improve CTR.\n\n• Keyword “a2b” has 641 impressions but only 1.09% CTR at position 9.0—improve ranking and snippet appeal to capture more clicks.\n\n• “a2b ai” performs best with 12.2% CTR and position 1.2—expand content around this keyword cluster.\n\n• Mobile drives more clicks (20 vs 14 desktop), suggesting mobile UX improvements can further boost performance.\n\n• Traffic is concentrated in India (12 clicks) with limited global reach—target international keywords to expand audience.\n\n• Multiple blog pages rank between positions 4–7 but get zero clicks—rewrite headlines to better match search intent and increase engagement.\n"
+        }
+      },
+      "id": "17e5edb3-3287-4796-8464-50ddc54f0fd7",
+      "name": "Generating Insights for SEO Results2",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        1328,
+        1024
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "propertyId": {
+          "__rl": true,
+          "value": "512125498",
+          "mode": "list",
+          "cachedResultName": "A2B Agency",
+          "cachedResultUrl": "https://analytics.google.com/analytics/web/#/p512125498/"
+        },
+        "dateRange": "custom",
+        "startDate": "={{ $json.date_start }}",
+        "endDate": "={{ $json.date_end }}",
+        "metricsGA4": {
+          "metricValues": [
+            {},
+            {
+              "listName": "sessions"
+            },
+            {
+              "listName": "sessionsPerUser"
+            },
+            {
+              "listName": "userEngagementDuration"
+            }
+          ]
+        },
+        "dimensionsGA4": {
+          "dimensionValues": [
+            {
+              "listName": "sourceMedium"
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleAnalytics",
+      "typeVersion": 2,
+      "position": [
+        -672,
+        -896
+      ],
+      "id": "1a1d9a73-4b5b-4bad-8967-265129f201cb",
+      "name": "Get a report",
+      "credentials": {
+        "googleAnalyticsOAuth2": {
+          "id": "Cnu7iufESvetQChX",
+          "name": "Google Analytics account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "propertyId": {
+          "__rl": true,
+          "value": "512125498",
+          "mode": "list",
+          "cachedResultName": "A2B Agency",
+          "cachedResultUrl": "https://analytics.google.com/analytics/web/#/p512125498/"
+        },
+        "dateRange": "custom",
+        "startDate": "={{ $json.date_start }}",
+        "endDate": "={{ $json.date_end }}",
+        "metricsGA4": {
+          "metricValues": [
+            {
+              "listName": "sessions"
+            },
+            {
+              "listName": "other",
+              "name": "engagementRate"
+            },
+            {
+              "listName": "other",
+              "name": "=engagedSessions"
+            },
+            {
+              "listName": "other",
+              "name": "averageSessionDuration"
+            }
+          ]
+        },
+        "dimensionsGA4": {
+          "dimensionValues": [
+            {
+              "listName": "other",
+              "name": "sessionDefaultChannelGroup"
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleAnalytics",
+      "typeVersion": 2,
+      "position": [
+        160,
+        144
+      ],
+      "id": "ed613027-aac0-4f77-a29c-87e19c249b4b",
+      "name": "Get a report1",
+      "credentials": {
+        "googleAnalyticsOAuth2": {
+          "id": "Cnu7iufESvetQChX",
+          "name": "Google Analytics account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Data Collection",
+        "height": 2032,
+        "width": 748,
+        "color": 6
+      },
+      "id": "4d969b48-c0f8-4f9c-accc-ab78f82aa164",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -176,
+        80
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "# REPORT CREATION",
+        "height": 432,
+        "width": 1564,
+        "color": 3
+      },
+      "id": "0288c491-924b-44d7-8542-8ebfdcf35d8d",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1056,
+        928
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "const report = items[0].json;\n\n/* =========================\n   STYLE VARIABLES\n   (Edit these to adjust colors, fonts, spacing)\n   ========================= */\nconst STYLE = {\n  // Layout\n  bg: \"#f3f4f6\",\n  container: \"#ffffff\",\n  containerRadius: \"10px\",\n  containerPadding: \"25px\",\n  outerPadding: \"30px\",\n  maxWidth: \"750px\",\n  font: \"Arial\",\n\n  // Text colors\n  text: \"#111827\",\n  sub: \"#6b7280\",\n  primary: \"#7c3aed\",\n\n  // Borders\n  border: \"#e5e7eb\",\n\n  // Table\n  tableHeaderBg: \"#f9fafb\",\n  tableFontSize: \"13px\",\n\n  // Insight cards\n  insightBorder: \"#e5e7eb\",\n  insightBg: \"#fafafa\",\n  insightTitleSize: \"14px\",\n  insightTitleColor: \"#111827\",\n  insightDescSize: \"13px\",\n  insightDescColor: \"#374151\",\n\n  // KPI cards\n  kpiLabelSize: \"11px\",\n  kpiValueSize: \"22px\",\n  kpiSubSize: \"11px\",\n  kpiRadius: \"10px\",\n  kpiPadding: \"14px\",\n\n  // GA table\n  gaFontSize: \"13px\",\n  gaTotalRowBg: \"#f3f4f6\",\n\n  // Section heading size\n  h2Size: \"18px\",\n  h3Size: \"16px\",\n\n  // Footer\n  footerSize: \"12px\",\n  footerLink: \"#7c3aed\"\n};\n\n/* KPI card colors (order: Clicks, Impressions, CTR, Position) */\nconst KPI_COLORS = [\n  { label: \"Clicks\",      color: \"#4285F4\" },\n  { label: \"Impressions\",  color: \"#7E57C2\" },\n  { label: \"CTR\",          color: \"#009688\" },\n  { label: \"Position\",     color: \"#F9AB00\" }\n];\n\n/* Chart line colors */\nconst CHART_COLORS = {\n  impressions: \"#7E57C2\",\n  clicks: \"#4285F4\"\n};\n\n/* Country code → full name mapping */\nconst COUNTRY_MAP = {\n  IND: \"India\",\n  USA: \"United States\",\n  MEX: \"Mexico\",\n  AUS: \"Australia\",\n  CAN: \"Canada\",\n  PHL: \"Philippines\",\n  ARE: \"UAE\",\n  CHE: \"Switzerland\",\n  CRI: \"Costa Rica\",\n  EGY: \"Egypt\"\n};\n\n/* =========================\n   HELPERS\n   ========================= */\nconst clean = (str) => String(str || '').replace(/\\n/g, '').replace(/\\s+/g, ' ');\n\nconst stripEllipsis = (val) => String(val || '')\n  .replace(/max-width:[^;]+;/g, '')\n  .replace(/overflow:hidden;/g, '')\n  .replace(/white-space:nowrap;/g, '')\n  .replace(/text-overflow:ellipsis;/g, '');\n\nconst sortByClicksDesc = (arr) => {\n  return [...arr].sort((a, b) => Number(b.clicks || b.Clicks) - Number(a.clicks || a.Clicks));\n};\n\nconst fmtTime = (s) => {\n  const m = Math.floor(s / 60);\n  const sec = Math.round(s % 60);\n  return m > 0 ? m + \"m \" + sec + \"s\" : sec + \"s\";\n};\n\n/* =========================\n   FORMAT INSIGHTS\n   ========================= */\nconst formatInsights = (text) => {\n  if (!text) return \"\";\n  const points = text.split(\"•\").filter(p => p.trim() !== \"\");\n  return `\n    <div style=\"display:flex;flex-direction:column;gap:14px;\">\n      ${points.map(p => {\n        const parts = p.split(\":\");\n        const title = parts.shift();\n        const desc = parts.join(\":\");\n        return `\n          <div style=\"border:1px solid ${STYLE.insightBorder};border-radius:8px;padding:12px;background:${STYLE.insightBg};\">\n            <div style=\"font-weight:600;font-size:${STYLE.insightTitleSize};color:${STYLE.insightTitleColor};margin-bottom:4px;\">\n              ${title.trim()}\n            </div>\n            <div style=\"font-size:${STYLE.insightDescSize};color:${STYLE.insightDescColor};line-height:1.5;\">\n              ${desc.trim()}\n            </div>\n          </div>\n        `;\n      }).join('')}\n    </div>\n  `;\n};\n\n/* =========================\n   1. GSC KPI CARDS (Clicks, Impressions, CTR, Position)\n   ========================= */\nconst kpis = report.overview;\nconst kpiKeys = [\"clicks\",\"impressions\",\"average_ctr\",\"average_position\"];\n\nconst kpiCards = `\n<table width=\"100%\" style=\"margin-top:20px;\">\n<tr>\n${kpiKeys.map((key, i) => `\n<td style=\"padding:6px;width:25%;\">\n  <div style=\"border:1px solid ${KPI_COLORS[i].color};\n              background:${KPI_COLORS[i].color}15;\n              border-radius:${STYLE.kpiRadius};\n              padding:${STYLE.kpiPadding};\">\n    <div style=\"font-size:${STYLE.kpiLabelSize};color:${STYLE.sub};text-transform:uppercase;\">\n      ${KPI_COLORS[i].label}\n    </div>\n    <div style=\"font-size:${STYLE.kpiValueSize};font-weight:bold;color:${STYLE.text};margin-top:6px;\">\n      ${kpis[key].value}\n    </div>\n    <div style=\"font-size:${STYLE.kpiSubSize};margin-top:6px;\">\n      ${kpis[key].subtitle}\n    </div>\n  </div>\n</td>\n`).join('')}\n</tr>\n</table>\n`;\n\n/* =========================\n   2. INSIGHTS\n   ========================= */\nconst insightsSection = `\n<div style=\"margin-top:20px;\">\n  <h2 style=\"font-size:${STYLE.h2Size};\">Insights</h2>\n  ${formatInsights(report.insights_content)}\n</div>\n`;\n\n/* =========================\n   3. GOOGLE ANALYTICS (REAL DATA)\n   ========================= */\nconst gaItems = report.ga_data || [];\n\nconst gaRows = gaItems.map(item => ({\n  channel: item.sessionDefaultChannelGroup || \"Unknown\",\n  sessions: Number(item.sessions || 0),\n  engagementRate: Number(item.engagementRate || 0),\n  engagedSessions: Number(item.engagedSessions || 0),\n  avgSessionDuration: Number(item.averageSessionDuration || 0)\n}));\n\nconst gaTotals = gaRows.reduce((acc, r) => {\n  acc.sessions += r.sessions;\n  acc.engagedSessions += r.engagedSessions;\n  acc.avgSessionDuration += r.avgSessionDuration;\n  return acc;\n}, { sessions: 0, engagedSessions: 0, avgSessionDuration: 0 });\n\ngaTotals.engagementRate = gaTotals.sessions\n  ? (gaTotals.engagedSessions / gaTotals.sessions)\n  : 0;\n\nconst gaSection = `\n<div style=\"margin-top:25px;\">\n  <h2 style=\"font-size:${STYLE.h2Size};\">Google Analytics</h2>\n  <table width=\"100%\" style=\"border-collapse:collapse;margin-top:10px;font-size:${STYLE.gaFontSize};\">\n  <tr>\n  <th style=\"border:1px solid ${STYLE.border};background:${STYLE.tableHeaderBg};padding:8px;\">Channel</th>\n  <th style=\"border:1px solid ${STYLE.border};background:${STYLE.tableHeaderBg};padding:8px;\">Sessions</th>\n  <th style=\"border:1px solid ${STYLE.border};background:${STYLE.tableHeaderBg};padding:8px;\">Engaged Sessions</th>\n  <th style=\"border:1px solid ${STYLE.border};background:${STYLE.tableHeaderBg};padding:8px;\">Engagement Rate</th>\n  <th style=\"border:1px solid ${STYLE.border};background:${STYLE.tableHeaderBg};padding:8px;\">Avg Session Duration</th>\n  </tr>\n  ${gaRows.map(r => `\n  <tr>\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">${r.channel}</td>\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">${r.sessions}</td>\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">${r.engagedSessions}</td>\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">${(r.engagementRate * 100).toFixed(1)}%</td>\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">${fmtTime(r.avgSessionDuration)}</td>\n  </tr>`).join('')}\n  <tr style=\"font-weight:bold;background:${STYLE.gaTotalRowBg};\">\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">Total</td>\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">${gaTotals.sessions}</td>\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">${gaTotals.engagedSessions}</td>\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">${(gaTotals.engagementRate * 100).toFixed(1)}%</td>\n  <td style=\"border:1px solid ${STYLE.border};padding:8px;\">${fmtTime(gaTotals.avgSessionDuration)}</td>\n  </tr>\n  </table>\n</div>\n`;\n\n/* =========================\n   4. GOOGLE SEARCH CONSOLE — Charts\n   ========================= */\nconst chartConfig = (label, labels, dataset, color) => {\n  return encodeURIComponent(JSON.stringify({\n    type: 'line',\n    data: {\n      labels,\n      datasets: [{\n        label,\n        data: dataset.map(Number),\n        borderColor: color,\n        backgroundColor: color,\n        fill: false\n      }]\n    }\n  }));\n};\n\nconst impressionsChart = `https://quickchart.io/chart?c=${chartConfig(\n  'Impressions',\n  report.performance.labels,\n  report.performance.impressions,\n  CHART_COLORS.impressions\n)}`;\n\nconst clicksChart = `https://quickchart.io/chart?c=${chartConfig(\n  'Clicks',\n  report.performance.labels,\n  report.performance.clicks,\n  CHART_COLORS.clicks\n)}`;\n\nconst chartsSection = `\n<div style=\"margin-top:25px;\">\n  <h2 style=\"font-size:${STYLE.h2Size};\">Google Search Console — Performance Trends</h2>\n  <img src=\"${impressionsChart}\" style=\"width:100%;margin-top:10px;\">\n  <img src=\"${clicksChart}\" style=\"width:100%;margin-top:15px;\">\n</div>\n`;\n\n/* =========================\n   4b. GSC — Data tables\n   ========================= */\nconst topPages = sortByClicksDesc(report.top_10_pages || []);\nconst topKeywords = sortByClicksDesc(report.top_10_keywords || []);\n\nconst devices = sortByClicksDesc(\n  (report.devices?.labels || []).map((d, i) => ({\n    Device: d,\n    Clicks: report.devices.clicks[i]\n  }))\n);\n\nconst countries = sortByClicksDesc(\n  (report.top_10_countries?.labels || []).map((c, i) => ({\n    Country: COUNTRY_MAP[c.toUpperCase()] || c,\n    Clicks: report.top_10_countries.clicks[i]\n  }))\n);\n\n/* TABLE HELPER */\nconst table = (title, rows, cols) => `\n<h3 style=\"margin-top:25px;font-size:${STYLE.h3Size};\">${title}</h3>\n<table width=\"100%\" style=\"border-collapse:collapse;font-size:${STYLE.tableFontSize};\">\n<tr>\n${cols.map(c => `<th style=\"border:1px solid ${STYLE.border};background:${STYLE.tableHeaderBg};padding:8px;\">${c}</th>`).join('')}\n</tr>\n${rows.map(r => `\n<tr>\n${cols.map(c => `<td style=\"border:1px solid ${STYLE.border};padding:8px;\">${stripEllipsis(r[c] || r[c.toLowerCase()] || '')}</td>`).join('')}\n</tr>`).join('')}\n</table>\n`;\n\n/* =========================\n   FINAL HTML ASSEMBLY\n   Order: KPI Cards → Insights → GA → GSC (charts + tables) → Footer\n   ========================= */\nlet html = `\n<div style=\"background:${STYLE.bg};padding:${STYLE.outerPadding};font-family:${STYLE.font};\">\n  <div style=\"max-width:${STYLE.maxWidth};margin:0 auto;background:${STYLE.container};padding:${STYLE.containerPadding};border-radius:${STYLE.containerRadius};border:1px solid ${STYLE.border};\">\n\n    <div style=\"text-align:center;\">\n      <h1 style=\"margin:0;color:${STYLE.primary};\">SEO Performance Report</h1>\n      <div style=\"color:${STYLE.sub};font-size:13px;margin-top:5px;\">${report.report_date}</div>\n    </div>\n\n    ${kpiCards}\n\n    ${insightsSection}\n\n    ${gaSection}\n\n    ${chartsSection}\n\n    ${table(\"Top Pages\", topPages, [\"Page\",\"Clicks\",\"Impressions\",\"CTR\",\"Position\"])}\n    ${table(\"Top Keywords\", topKeywords, [\"Keyword\",\"Clicks\",\"Impressions\",\"CTR\",\"Position\"])}\n    ${table(\"Devices\", devices, [\"Device\",\"Clicks\"])}\n    ${table(\"Top Countries\", countries, [\"Country\",\"Clicks\"])}\n\n    <div style=\"text-align:center;margin-top:30px;font-size:${STYLE.footerSize};color:${STYLE.sub};\">\n      Created by <a href=\"https://melvincv.com\" style=\"color:${STYLE.footerLink};text-decoration:none;\">Melvin C V</a>\n    </div>\n\n  </div>\n</div>\n`;\n\nhtml = clean(html);\n\nreturn [{ json: { html } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1872,
+        3520
+      ],
+      "id": "678042d1-dffd-4959-a6cf-5606ddbcfd59",
+      "name": "Generate HTML report1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Format data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Date": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Format Page": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Format data": {
+      "main": [
+        [
+          {
+            "node": "Generating Insights for SEO Results2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Query": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Configuration": {
+      "main": [
+        [
+          {
+            "node": "GSC - Date",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GSC - Pages",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GSC - Devices",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GSC - Countries",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GSC - Query - Previous Month",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GSC - Pages - Previous month",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GSC - Overview",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GSC - Overview - Previous Month",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GSC - Queries",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get a report1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Country": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Format Devices": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Split Out Date": {
+      "main": [
+        [
+          {
+            "node": "Format Date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Overview": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Pages": {
+      "main": [
+        [
+          {
+            "node": "Format Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Query": {
+      "main": [
+        [
+          {
+            "node": "Format Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generating Insights for SEO Results2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Country": {
+      "main": [
+        [
+          {
+            "node": "Format Country",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Devices": {
+      "main": [
+        [
+          {
+            "node": "Format Devices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate variables": {
+      "main": [
+        [
+          {
+            "node": "Generate HTML report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Overview": {
+      "main": [
+        [
+          {
+            "node": "Format Overview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weekly at monday 8am": {
+      "main": [
+        [
+          {
+            "node": "Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Page - Previous month": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 8
+          }
+        ]
+      ]
+    },
+    "Format Query - Previous month": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 7
+          }
+        ]
+      ]
+    },
+    "Format Overview - Previous month": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    },
+    "Split Out Pages - Previous month": {
+      "main": [
+        [
+          {
+            "node": "Format Page - Previous month",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Query - Previous month": {
+      "main": [
+        [
+          {
+            "node": "Format Query - Previous month",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Overview - Previous month": {
+      "main": [
+        [
+          {
+            "node": "Format Overview - Previous month",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate HTML report": {
+      "main": [
+        [
+          {
+            "node": "PDFLayer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GSC - Overview": {
+      "main": [
+        [
+          {
+            "node": "Split Out Overview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GSC - Date": {
+      "main": [
+        [
+          {
+            "node": "Split Out Date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GSC - Pages": {
+      "main": [
+        [
+          {
+            "node": "Split Out Pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GSC - Queries": {
+      "main": [
+        [
+          {
+            "node": "Split Out Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GSC - Devices": {
+      "main": [
+        [
+          {
+            "node": "Split Out Devices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GSC - Countries": {
+      "main": [
+        [
+          {
+            "node": "Split Out Country",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GSC - Overview - Previous Month": {
+      "main": [
+        [
+          {
+            "node": "Split Out Overview - Previous month",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GSC - Query - Previous Month": {
+      "main": [
+        [
+          {
+            "node": "Split Out Query - Previous month",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GSC - Pages - Previous month": {
+      "main": [
+        [
+          {
+            "node": "Split Out Pages - Previous month",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generating Insights for SEO Results2": {
+      "main": [
+        [
+          {
+            "node": "Generate variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a report": {
+      "main": [
+        []
+      ]
+    },
+    "PDFLayer": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a report1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 9
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d55b98cc-dea0-4164-a107-45ea53271769",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0443de79cca3cf2e76093f7c614c805a6fe0d238bf846d089017538f41befaff"
+  },
+  "id": "YupoU8AcjXtC5kUq",
+  "tags": []
+}

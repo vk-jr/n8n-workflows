@@ -1,0 +1,110 @@
+{
+  "name": "Instagram Post",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "fileID"
+            },
+            {
+              "name": "text"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8dafefad-c663-40e0-b72e-23c6605f7166",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "mediaUrl": "=https://drive.google.com/uc?export=download&id={{ $json.fileID }}"
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "66e069cd-f1c0-4a52-a538-7aecb45be163",
+      "name": "Upload media",
+      "credentials": {
+        "blotatoApi": {
+          "id": "DhjuoSptPQwDt513",
+          "name": "Blotato account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "accountId": {
+          "__rl": true,
+          "value": "2966",
+          "mode": "list",
+          "cachedResultName": "the_plaiground",
+          "cachedResultUrl": "https://backend.blotato.com/v2/accounts/2966"
+        },
+        "postContentText": "={{ $('When Executed by Another Workflow').item.json.text }}",
+        "postContentMediaUrls": "={{ $json.url }}",
+        "options": {}
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        432,
+        0
+      ],
+      "id": "41e958c1-b21c-46f5-89c9-c347f7f81ccb",
+      "name": "Instagram",
+      "credentials": {
+        "blotatoApi": {
+          "id": "DhjuoSptPQwDt513",
+          "name": "Blotato account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Upload media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload media": {
+      "main": [
+        [
+          {
+            "node": "Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c188e9c0-799b-42ac-8f99-02e3ada345b0",
+  "meta": {
+    "instanceId": "95e5a8c2e51c83e33b232ea792bbe3f063c094c33d9806a5565cb31759e1ad39"
+  },
+  "id": "nrU0CVm0F9Yuiqqh",
+  "tags": []
+}

@@ -1,0 +1,112 @@
+{
+  "name": "TikTok Post Tool",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "fileID"
+            },
+            {
+              "name": "text"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        -144
+      ],
+      "id": "d01d0f83-d8e1-49a4-a519-269a8b6e2614",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "mediaUrl": "=https://drive.google.com/uc?export=download&id={{ $json.fileID }}"
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        432,
+        -144
+      ],
+      "id": "7dbe4036-1b43-4ddf-af86-8acf11664506",
+      "name": "Upload media",
+      "credentials": {
+        "blotatoApi": {
+          "id": "DhjuoSptPQwDt513",
+          "name": "Blotato account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "platform": "tiktok",
+        "accountId": {
+          "__rl": true,
+          "value": "3562",
+          "mode": "list",
+          "cachedResultName": "the_plaiground",
+          "cachedResultUrl": "https://backend.blotato.com/v2/accounts/3562"
+        },
+        "postContentText": "={{ $('When Executed by Another Workflow').item.json.text }}",
+        "postContentMediaUrls": "={{ $json.url }}",
+        "postCreateTiktokOptionIsAiGenerated": true,
+        "options": {}
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        640,
+        -144
+      ],
+      "id": "57804d2a-3e81-4f4d-b252-fe931a4a9ea1",
+      "name": "TikTok",
+      "credentials": {
+        "blotatoApi": {
+          "id": "DhjuoSptPQwDt513",
+          "name": "Blotato account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Upload media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload media": {
+      "main": [
+        [
+          {
+            "node": "TikTok",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6dfd64a3-5fdd-4587-96a8-eda86b50d9a7",
+  "meta": {
+    "instanceId": "95e5a8c2e51c83e33b232ea792bbe3f063c094c33d9806a5565cb31759e1ad39"
+  },
+  "id": "HCSEx2GqMubEs0wQ",
+  "tags": []
+}

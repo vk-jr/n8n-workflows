@@ -1,0 +1,111 @@
+{
+  "name": "X Post",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "fileID"
+            },
+            {
+              "name": "text"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        16,
+        -160
+      ],
+      "id": "5d4d2df0-ff19-4b9d-9812-71678812bc3f",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "mediaUrl": "=https://drive.google.com/uc?export=download&id={{ $json.fileID }}"
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        240,
+        -160
+      ],
+      "id": "dd90cb60-1ba2-41ad-9807-9643a5720faa",
+      "name": "Upload media",
+      "credentials": {
+        "blotatoApi": {
+          "id": "DhjuoSptPQwDt513",
+          "name": "Blotato account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "platform": "twitter",
+        "accountId": {
+          "__rl": true,
+          "value": "2843",
+          "mode": "list",
+          "cachedResultName": "nateherk",
+          "cachedResultUrl": "https://backend.blotato.com/v2/accounts/2843"
+        },
+        "postContentText": "={{ $('When Executed by Another Workflow').item.json.text }}",
+        "postContentMediaUrls": "={{ $json.url }}",
+        "options": {}
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -160
+      ],
+      "id": "1d2e9347-511c-4fa0-b8f2-7b4d851c2fb5",
+      "name": "X",
+      "credentials": {
+        "blotatoApi": {
+          "id": "DhjuoSptPQwDt513",
+          "name": "Blotato account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Upload media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload media": {
+      "main": [
+        [
+          {
+            "node": "X",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "304c06f4-adf9-4ff9-b9b1-717475f48b6b",
+  "meta": {
+    "instanceId": "95e5a8c2e51c83e33b232ea792bbe3f063c094c33d9806a5565cb31759e1ad39"
+  },
+  "id": "XVDzyGSsC8apv1Xd",
+  "tags": []
+}

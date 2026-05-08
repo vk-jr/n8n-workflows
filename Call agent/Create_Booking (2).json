@@ -1,0 +1,113 @@
+{
+  "name": "Create Booking",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.opendental.com/api/v1/appointments",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "ODFHIR {DeveloperKey}/{CustomerKey}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"PatNum\": {{ $json.body.args.PatNum }},\n  \"Op\": 3,\n  \"AptDateTime\": \"{{ $json.body.args.AptDateTime }}\",\n  \"IsNewPatient\":\"{{ $json.body.args.IsNewPatient}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -320,
+        20
+      ],
+      "id": "823f18e9-2421-463c-bce6-bcb06ae3aa55",
+      "name": "Create Booking",
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=Appointement Number i.e AptNum {{ $json.AptNum }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "fc9926aa-a992-4bdc-bc24-d3d73f945948",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "b62ced9b-0272-4c85-ac6f-3d8620a622ac",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        20
+      ],
+      "id": "b5c499fc-4a52-42f1-9c9e-55e631441312",
+      "name": "Webhook1",
+      "webhookId": "b62ced9b-0272-4c85-ac6f-3d8620a622ac"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Create Booking": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Create Booking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "92cc37e7-6691-4cc9-9292-be45e1f8db68",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ef1cb717b6b1d152d1e7cdafad34470ce555620e03a62349925bd02372f340a4"
+  },
+  "id": "BeuNzVSD9GpHuDLb",
+  "tags": [
+    {
+      "createdAt": "2025-05-30T18:33:44.669Z",
+      "updatedAt": "2025-05-30T18:33:44.669Z",
+      "id": "1LSTIF6WBOcQX7jx",
+      "name": "Learning"
+    }
+  ]
+}

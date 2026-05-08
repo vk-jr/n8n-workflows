@@ -1,0 +1,798 @@
+{
+  "name": "Social Media Uploader",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openRouterApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer $OPENROUTER_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n\"model\": \"google/gemini-2.5-flash-image-preview:free\",\n\"messages\": [\n{\n\"role\": \"user\",\n\"content\": [\n{\n\"type\": \"text\",\n\"text\": \"{{ $json.output['Image Prompt'] }}\"\n}\n]\n}\n]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        32,
+        -352
+      ],
+      "id": "de50ee45-1dba-49a8-b91f-df60fb6b8e14",
+      "name": "Nano 🍌",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "fS11SjNqBiNnF7L3",
+          "name": "Header Auth account"
+        },
+        "openRouterApi": {
+          "id": "sw6yyqIrXNw0jbZJ",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6355ac9e-1f4c-42a3-8167-8bb8298cd369",
+              "name": "data",
+              "value": "={{ $json.choices[0].message.images[0].image_url.url }}",
+              "type": "string"
+            },
+            {
+              "id": "dc98bc1c-4048-4fcb-80c5-73dc99b78ddd",
+              "name": "base",
+              "value": "={{ $json.choices[0].message.images[0].image_url.url.split(',')[1] }}",
+              "type": "string"
+            },
+            {
+              "id": "8033a47e-f50c-43ae-b404-99d0fb5cf4eb",
+              "name": "mime",
+              "value": "={{ $json.choices[0].message.images[0].image_url.url.split(';')[0].split(':')[1] }}",
+              "type": "string"
+            },
+            {
+              "id": "0e516163-02cc-4242-ba70-ac2bce94d2dd",
+              "name": "fileName",
+              "value": ".png",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        -368
+      ],
+      "id": "8adbaf2f-483a-4e63-83d5-57fd8a33af75",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "base",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        656,
+        -368
+      ],
+      "id": "b8eccf92-c55d-4865-80e5-da6ec852ae0c",
+      "name": "Convert to Binary"
+    },
+    {
+      "parameters": {
+        "text": "=Topic: {{ $('Input').item.json[\"Content Topic\"] }}\n\nFrom this Your Task to generate perfect Image prompt.",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "Image Prompt",
+              "description": "Prompt of the Image. Perfect for google/gemini-2.5-flash-image-preview:free model.\nEscape all double quotes inside a JSON string with a backslash (like this: \\\")",
+              "required": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        -320,
+        -352
+      ],
+      "id": "66c4b645-86c9-4a99-a055-b05c128ceff6",
+      "name": "Image Prompt Generator"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -512,
+        -96
+      ],
+      "id": "5e535f05-de69-4911-9c47-53a71d9f2dd2",
+      "name": "2.5 Flash",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "r1ZkzE6I04xcx5en",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "AI Content Uploader",
+        "formDescription": "Give a Topic Just AI will do Rest of The Work",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Content Topic",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -1088,
+        -352
+      ],
+      "id": "2846e450-69ea-4ded-8121-cff61a5a159f",
+      "name": "Input",
+      "webhookId": "3dc28997-3cdd-4084-92a5-7d1896c98bd5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e9bb78dd-0b5d-447f-91db-b99578761e7f",
+              "leftValue": "={{ $json.choices[0].message.images[0].image_url.url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "bcd69ef8-82be-46e2-bdd8-1ed227c92a18",
+              "leftValue": "={{ $json.choices[0].message.images[0].image_url.url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        -352
+      ],
+      "id": "d3bf9fc1-784e-4c08-b2bf-df070db8b801",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "text": "=Topic:  {{ $json['Content Topic'] }}\n\nBased on this Topic Generate Perfect And Social Media Platform Based Captions. Don't use (*) this star symbol in the output.",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "Facebook Caption",
+              "description": "Caption for Facebook Post with proper Hashtags",
+              "required": true
+            },
+            {
+              "name": "Instagram Caption",
+              "description": "Caption for Instagram post with proper Hashtags",
+              "required": true
+            },
+            {
+              "name": "Linkedin Caption",
+              "description": "Caption for Linkedin Post with proper Hashtags",
+              "required": true
+            },
+            {
+              "name": "Pinterest Caption",
+              "description": "Caption for Pinterest Post with Proper Hashtags",
+              "required": true
+            },
+            {
+              "name": "X Tweet",
+              "description": "perfect Tweet in less than 280 Characters",
+              "required": true
+            },
+            {
+              "name": "Threads Caption",
+              "description": "perfect Thread in less than 500 Characters",
+              "required": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        -672,
+        -352
+      ],
+      "id": "5f0b3eae-65ce-485a-ab59-d96e72598e93",
+      "name": "Text Content Generator"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "YOUR EMAIL ADDRESS",
+        "subject": "=Approval for {{ $('Input').item.json['Content Topic'] }} Post",
+        "message": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Social Media Captions</title>\n  <style>\n    /* Google Fonts */\n    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');\n\n    body {\n      font-family: 'Inter', sans-serif;\n      background: linear-gradient(135deg, #e0f7fa, #e3f2fd);\n      margin: 0;\n      padding: 20px;\n      display: flex;\n      justify-content: center;\n      align-items: center;\n      min-height: 100vh;\n    }\n\n    .container {\n      background: #fff;\n      padding: 40px;\n      border-radius: 20px;\n      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);\n      max-width: 850px;\n      width: 100%;\n      animation: fadeIn 0.8s ease-in-out;\n    }\n\n    h1 {\n      color: #0d47a1;\n      text-align: center;\n      margin-bottom: 35px;\n      font-size: 2.2rem;\n      font-weight: 700;\n      position: relative;\n    }\n\n    h1::after {\n      content: \"\";\n      width: 80px;\n      height: 4px;\n      background: #0d47a1;\n      display: block;\n      margin: 10px auto 0;\n      border-radius: 2px;\n    }\n\n    .section {\n      margin-bottom: 25px;\n      background: #f5f9ff;\n      border-left: 6px solid #0d47a1;\n      padding: 18px 20px;\n      border-radius: 12px;\n      transition: transform 0.2s ease, box-shadow 0.2s ease;\n    }\n\n    .section:hover {\n      transform: translateY(-3px);\n      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);\n    }\n\n    .section-title {\n      font-weight: 600;\n      font-size: 1.05rem;\n      color: #0d47a1;\n      margin-bottom: 8px;\n      display: flex;\n      align-items: center;\n      gap: 8px;\n    }\n\n    .section-title::before {\n      content: \"💡\";\n      font-size: 1.2rem;\n    }\n\n    p {\n      margin: 0;\n      line-height: 1.6;\n      color: #444;\n      font-size: 0.95rem;\n    }\n\n    .image-container {\n      text-align: center;\n      margin-top: 40px;\n      border-top: 2px dashed #bbb;\n      padding-top: 25px;\n    }\n\n    .image-container .section-title {\n      justify-content: center;\n      margin-bottom: 15px;\n    }\n\n    .image-container img {\n      max-width: 100%;\n      border-radius: 15px;\n      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);\n      transition: transform 0.3s ease;\n    }\n\n    .image-container img:hover {\n      transform: scale(1.03);\n    }\n\n    /* Animation */\n    @keyframes fadeIn {\n      from {\n        opacity: 0;\n        transform: translateY(15px);\n      }\n      to {\n        opacity: 1;\n        transform: translateY(0);\n      }\n    }\n  </style>\n</head>\n<body>\n\n<div class=\"container\">\n  <h1>✨ Social Media Content ✨</h1>\n\n  <div class=\"section\">\n    <div class=\"section-title\">Facebook Caption</div>\n    <p>{{ $('Text Content Generator').item.json.output['Facebook Caption'] }}</p>\n  </div>\n\n  <div class=\"section\">\n    <div class=\"section-title\">Instagram Caption</div>\n    <p>{{ $('Text Content Generator').item.json.output['Instagram Caption'] }}</p>\n  </div>\n\n  <div class=\"section\">\n    <div class=\"section-title\">LinkedIn Caption</div>\n    <p>{{ $('Text Content Generator').item.json.output['Linkedin Caption'] }}</p>\n  </div>\n\n  <div class=\"section\">\n    <div class=\"section-title\">Pinterest Caption</div>\n    <p>{{ $('Text Content Generator').item.json.output['Pinterest Caption'] }}</p>\n  </div>\n\n  <div class=\"section\">\n    <div class=\"section-title\">Tweet</div>\n    <p>{{ $('Text Content Generator').item.json.output['X Tweet'] }}</p>\n  </div>\n\n  <div class=\"section\">\n    <div class=\"section-title\">Threads Caption</div>\n    <p>{{ $('Text Content Generator').item.json.output['Threads Caption'] }}</p>\n  </div>\n\n  <div class=\"image-container\">\n    <div class=\"section-title\">Generated Image</div>\n    <img src=\"{{ $('Nano 🍌').item.json.choices[0].message.images[0].image_url.url }}\" alt=\"Generated Image\">\n  </div>\n</div>\n</body>\n</html>",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "disapproveLabel": "Regenerate",
+            "buttonDisapprovalStyle": "primary"
+          }
+        },
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "resumeAmount": 10,
+              "resumeUnit": "minutes"
+            }
+          },
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        848,
+        -368
+      ],
+      "id": "00b9e400-043e-41f6-bd8f-9b0fd17d9712",
+      "name": "Send a message",
+      "webhookId": "cd7468d8-a844-48e5-80a0-2aaa38a24907",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "7lB3glwXmbtmPet7",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.data.approved }}",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "36244d46-7d7f-4fd2-9023-bfac55d6fc13"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Approved"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "7b03acd8-46d3-44a6-a7e2-479b392a3b63",
+                    "leftValue": "={{ $json.data.approved }}",
+                    "rightValue": "false",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Regenerate"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e7b40816-5693-470f-a579-c353869fead6",
+                    "leftValue": "={{ $json.data.approved }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "empty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "No Action"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1040,
+        -384
+      ],
+      "id": "1ecb6715-9b6e-4dd2-9d8c-31e809fddc6f",
+      "name": "Switch"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -128
+      ],
+      "id": "fecf01b7-7e38-4471-8ac6-7845cd751cab",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6355ac9e-1f4c-42a3-8167-8bb8298cd369",
+              "name": "data",
+              "value": "={{ $('Nano 🍌').item.json.choices[0].message.images[0].image_url.url }}",
+              "type": "string"
+            },
+            {
+              "id": "dc98bc1c-4048-4fcb-80c5-73dc99b78ddd",
+              "name": "base",
+              "value": "={{ $('Nano 🍌').item.json.choices[0].message.images[0].image_url.url.split(',')[1] }}",
+              "type": "string"
+            },
+            {
+              "id": "8033a47e-f50c-43ae-b404-99d0fb5cf4eb",
+              "name": "mime",
+              "value": "={{ $('Nano 🍌').item.json.choices[0].message.images[0].image_url.url.split(';')[0].split(':')[1] }}",
+              "type": "string"
+            },
+            {
+              "id": "0e516163-02cc-4242-ba70-ac2bce94d2dd",
+              "name": "fileName",
+              "value": ".png",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1296,
+        -400
+      ],
+      "id": "fd53e124-0c55-4b26-babb-6ecb656f364c",
+      "name": "Edit Fields Again"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "base",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1488,
+        -400
+      ],
+      "id": "7d3872ed-53af-4855-a988-f768309bc9f9",
+      "name": "Convert to Binary Again"
+    },
+    {
+      "parameters": {
+        "user": "jamal",
+        "platform": [
+          "facebook"
+        ],
+        "title": "={{ $('Text Content Generator').item.json.output[\"Facebook Caption\"] }}",
+        "photos": "data",
+        "caption": "={{ $('Text Content Generator').item.json.output[\"Facebook Caption\"] }}",
+        "facebookPageId": "102259092781849"
+      },
+      "type": "n8n-nodes-upload-post.uploadPost",
+      "typeVersion": 1,
+      "position": [
+        1776,
+        -720
+      ],
+      "id": "b813bcc2-818c-4b45-8d74-92047b865501",
+      "name": "Facebook",
+      "credentials": {
+        "uploadPostApi": {
+          "id": "VXLY2927uQJoh8EQ",
+          "name": "Upload Post account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "user": "jamal",
+        "platform": [
+          "instagram"
+        ],
+        "title": "={{ $('Text Content Generator').item.json.output[\"Instagram Caption\"] }}",
+        "photos": "data",
+        "caption": "={{ $('Text Content Generator').item.json.output[\"Instagram Caption\"] }}"
+      },
+      "type": "n8n-nodes-upload-post.uploadPost",
+      "typeVersion": 1,
+      "position": [
+        1776,
+        -560
+      ],
+      "id": "c88d6ed6-23f4-452c-ae6f-741d9d66271c",
+      "name": "Instagram",
+      "credentials": {
+        "uploadPostApi": {
+          "id": "VXLY2927uQJoh8EQ",
+          "name": "Upload Post account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "user": "jamal",
+        "platform": [
+          "linkedin"
+        ],
+        "title": "={{ $('Text Content Generator').item.json.output[\"Linkedin Caption\"] }}",
+        "photos": "data",
+        "caption": "={{ $('Text Content Generator').item.json.output[\"Linkedin Caption\"] }}"
+      },
+      "type": "n8n-nodes-upload-post.uploadPost",
+      "typeVersion": 1,
+      "position": [
+        1776,
+        -400
+      ],
+      "id": "7950a547-ced1-4b76-83f0-34d23cdcecac",
+      "name": "Linkedin",
+      "credentials": {
+        "uploadPostApi": {
+          "id": "VXLY2927uQJoh8EQ",
+          "name": "Upload Post account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "user": "jamal",
+        "platform": [
+          "x"
+        ],
+        "title": "={{ $('Text Content Generator').item.json.output['X Tweet'] }}",
+        "photos": "data",
+        "caption": "={{ $('Text Content Generator').item.json.output['X Tweet'] }}"
+      },
+      "type": "n8n-nodes-upload-post.uploadPost",
+      "typeVersion": 1,
+      "position": [
+        1776,
+        -224
+      ],
+      "id": "34c1c75f-6b53-4170-b032-d058efaa7a0f",
+      "name": "X",
+      "credentials": {
+        "uploadPostApi": {
+          "id": "VXLY2927uQJoh8EQ",
+          "name": "Upload Post account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "user": "jamal",
+        "platform": [
+          "threads"
+        ],
+        "title": "={{ $('Text Content Generator').item.json.output[\"Threads Caption\"] }}",
+        "photos": "data",
+        "caption": "={{ $('Text Content Generator').item.json.output[\"Threads Caption\"] }}"
+      },
+      "type": "n8n-nodes-upload-post.uploadPost",
+      "typeVersion": 1,
+      "position": [
+        1776,
+        -64
+      ],
+      "id": "f941bffc-5461-4ba4-b589-96369cb6575f",
+      "name": "Threads",
+      "credentials": {
+        "uploadPostApi": {
+          "id": "VXLY2927uQJoh8EQ",
+          "name": "Upload Post account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -880,
+        -352
+      ],
+      "id": "d8892d00-5551-492f-8305-34419eb2ee71",
+      "name": "Wait",
+      "webhookId": "174efe1b-258b-4112-ac91-32b682600e6a"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Nano 🍌": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Convert to Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2.5 Flash": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Image Prompt Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Text Content Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Prompt Generator": {
+      "main": [
+        [
+          {
+            "node": "Nano 🍌",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Image Prompt Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to Binary": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text Content Generator": {
+      "main": [
+        [
+          {
+            "node": "Image Prompt Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields Again",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields Again": {
+      "main": [
+        [
+          {
+            "node": "Convert to Binary Again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to Binary Again": {
+      "main": [
+        [
+          {
+            "node": "Facebook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Instagram",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Linkedin",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "X",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Threads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Text Content Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7ec8031c-45f2-4787-acfc-feacb45cafb3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "125e3b631be5af75b5d8304f7125cd5c84e5ea96c148171cca4bfb3fcc88fe9b"
+  },
+  "id": "meCtaVAam5EFTIMR",
+  "tags": []
+}

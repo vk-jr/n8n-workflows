@@ -1,0 +1,716 @@
+{
+  "name": "telegram bot",
+  "nodes": [
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Listen for incoming events').first().json.message.from.id }}"
+      },
+      "id": "3c414f98-a807-4f33-8955-f8378be8168b",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        1856,
+        432
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "adbde6a5-f7db-4c9a-8cb0-8843b12bbd4c",
+      "name": "Listen for incoming events",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "position": [
+        464,
+        160
+      ],
+      "webhookId": "322dce18-f93e-4f86-b9b1-3305519b7834",
+      "typeVersion": 1,
+      "credentials": {
+        "telegramApi": {
+          "id": "zlY3msncwpETKr6P",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Listen for incoming events').first().json.message.from.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "37680844-8794-472b-8ac4-1abafec2205b",
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        2272,
+        64
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "569b1932-3036-45b2-b38d-95e632051c2c",
+      "credentials": {
+        "telegramApi": {
+          "id": "zlY3msncwpETKr6P",
+          "name": "Telegram account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "a0bf9719-4272-46f6-ab3b-eda6f7b44fd8",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b7cac910-a59e-488c-8eae-cf5dbcb1c10d",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1008,
+        160
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "text",
+              "stringValue": "={{ $json?.message?.text || \"\" }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "169acc66-4d08-4cb5-87db-5364366dc379",
+      "name": "Voice or Text",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        800,
+        160
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Listen for incoming events').item.json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "id": "47a404f9-bb4b-48f9-a9ad-4a73323a401e",
+      "name": "Get Voice File",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        1216,
+        -64
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "d73d1f0a-2176-460b-b405-81f45c691e21",
+      "credentials": {
+        "telegramApi": {
+          "id": "zlY3msncwpETKr6P",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "options": {
+          "systemMessage": "=You are a AI assistant of Lifosys.\nTwo types of input by the user\n\nToday's date is {{ $now }}.\n\nGuidelines:\n- use Email MCP Client tool to read, write, read,fetch and add label to the mail\n- use the Calender tool to add an event, delete an event , get an event, see availabilty and get many events details in Google Calender\n- When fetching emails, filter out any promotional emails. \n- When summarizing emails, include Sender, Message date, subject, and brief summary of email.\n- if the user did not specify a date in the request assume they are asking for today\n- Use baserow tool to answer questions about tasks\n- When answering questions about calendar events, filter out events that don't apply to the question. For example, the question is about events for today, only reply with events for today. Don't mention future events if it's more than 1 week away\n\nAlways take the time zone as IST(Indian Standard Time)"
+        }
+      },
+      "id": "87ad48d3-0510-4732-84c0-abc80e3bb337",
+      "name": "Angie, AI Assistant 👩🏻‍🏫",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        1808,
+        176
+      ],
+      "typeVersion": 1.6,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "content": "## Process Telegram Request\n",
+        "height": 278.75,
+        "width": 496.25,
+        "color": 5
+      },
+      "id": "23aa1249-114e-41a7-b869-51f00e3dea40",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        640,
+        48
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1408,
+        48
+      ],
+      "id": "d92d5dde-91b1-4a81-b450-dd1b653ba025",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "NeKHtm2tWqUL8BtE",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        384
+      ],
+      "id": "b3f3148f-6edc-464d-af3d-855a6ab4b7a2",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "NeKHtm2tWqUL8BtE",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code Node\n// This assumes the JSON shown in the screenshot is in the first input item\n\n// Get the input data\nconst input = items[0].json;\n\n// Extract the text value\nconst text = input.content.parts[0].text;\n\n// Return the text as output\nreturn [\n  {\n    json: {\n      text: text\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -64
+      ],
+      "id": "b475b1d0-d0fc-42d2-baeb-52e06a9cb6ec",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "content": "## Email MCP Server (Ben)",
+        "height": 476,
+        "width": 976,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1152,
+        608
+      ],
+      "typeVersion": 1,
+      "id": "99a2da5d-0c46-4c39-b15d-3c7787915ad7",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Sends a new email using the connected Gmail account. Requires the recipient ('To'), 'Subject', and 'Message' body.",
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        1616,
+        928
+      ],
+      "id": "20e48c95-0eb0-4088-8ae5-7699ab06bd03",
+      "name": "Send Email",
+      "webhookId": "1bd6da19-2b37-4ffd-89aa-55d629a772da",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "FbO4iYiECmHNX4wT",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Adds one or more specified Gmail labels to a specific email message. Requires the 'Message_ID' of the email and the 'Label_Names_or_IDs' to add.",
+        "operation": "addLabels",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}",
+        "labelIds": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Label_Names_or_IDs', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        1984,
+        928
+      ],
+      "id": "93309a6c-dbdb-4868-8a27-d8b068934899",
+      "name": "Add Labels",
+      "webhookId": "bb898aa3-916a-434a-aebb-5b7c798353d4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "FbO4iYiECmHNX4wT",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Retrieves emails from the connected Gmail account. Allows filtering to find specific emails based on various criteria. Available optional filters:\n*   `Search` (string): General search query matching keywords in subject, body, or sender (uses Gmail's standard search syntax like 'from:sender@example.com subject:urgent').\n*   `Sender` (string): Filter for emails specifically FROM this email address.\n*   `Received_After` (string): Only retrieve emails received AFTER this date or date/time (e.g., '2024-04-10', '2024-04-10T10:00:00Z').\n*   `Received_Before` (string): Only retrieve emails received BEFORE this date or date/time (e.g., '2024-04-11', '2024-04-10T18:30:00Z').\nSpecify `Return_All` (boolean) as true to fetch all matching emails, otherwise a default limit applies. If no filters are provided, it retrieves recent emails.",
+        "operation": "getAll",
+        "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+        "filters": {
+          "q": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Search', ``, 'string') }}",
+          "receivedAfter": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Received_After', ``, 'string') }}",
+          "receivedBefore": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Received_Before', ``, 'string') }}",
+          "sender": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Sender', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        1856,
+        928
+      ],
+      "id": "bf5defba-1afd-481a-9573-ed6f7b787727",
+      "name": "Get Emails",
+      "webhookId": "a0d9cbb6-8a23-4113-9d06-04692c92bbc0",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "FbO4iYiECmHNX4wT",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Replies to a specific existing email thread in Gmail. Requires the 'Message_ID' of the thread to reply to, and the 'Message' body for the reply",
+        "operation": "reply",
+        "messageId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message_ID', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        1728,
+        928
+      ],
+      "id": "23a644e2-d14d-4033-b265-cceb1954975a",
+      "name": "Reply Email",
+      "webhookId": "f4b8950e-a053-4413-ac51-1a8466c57c99",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "FbO4iYiECmHNX4wT",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Creates a draft email in the connected Gmail account. It does NOT send the email, only saves it as a draft. Requires 'Subject' and 'Message' body",
+        "resource": "draft",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "html",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        1488,
+        928
+      ],
+      "id": "2c229c65-8be6-4849-8fe0-01c7f3ed2d8f",
+      "name": "Create Draft",
+      "webhookId": "d480e09f-66e2-46d3-b365-47263b591533",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "FbO4iYiECmHNX4wT",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://razyerlast.app.n8n.cloud/mcp/n8nMCP-Gmail-template/sse"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.1,
+      "position": [
+        2048,
+        432
+      ],
+      "id": "76e2f2bd-e4ee-40db-a294-f5bafe6197c5",
+      "name": "Email MCP Tool"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Listen for incoming events').first().json.message.from.id }}",
+        "text": "=Didn't Understand",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "855fe305-064f-4108-8b8c-65409f47a0fd",
+      "name": "Send a text message",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        2464,
+        240
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "569b1932-3036-45b2-b38d-95e632051c2c",
+      "credentials": {
+        "telegramApi": {
+          "id": "zlY3msncwpETKr6P",
+          "name": "Telegram account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "={{ $('Listen for incoming events').first().json.message.from.id }}"
+      },
+      "id": "b8579931-a647-491a-ab3c-d007645bcc09",
+      "name": "Send Typing action",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        752,
+        -112
+      ],
+      "typeVersion": 1.2,
+      "webhookId": "fd992425-5d02-40c8-a179-c0e2b4f98d97",
+      "credentials": {
+        "telegramApi": {
+          "id": "zlY3msncwpETKr6P",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Call this tool to add an event, delete an event , get an event, see availabilty and get many events details in Google Calender",
+        "workflowId": {
+          "__rl": true,
+          "value": "NO3kEifdefhzvSSS",
+          "mode": "list",
+          "cachedResultName": "Calender agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        2256,
+        368
+      ],
+      "id": "d00c1450-a16c-4cfb-bd73-9cc93481e68e",
+      "name": "Calender Tool"
+    },
+    {
+      "parameters": {
+        "authentication": "bearerAuth",
+        "path": "n8nMCP-Gmail-template"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 1,
+      "position": [
+        1264,
+        688
+      ],
+      "id": "7b7dd622-9a2a-441b-bbf8-bf101e1c4e9d",
+      "name": "MCP Server Gmail",
+      "webhookId": "abeed990-170e-4af3-a397-7b947fa8dbef",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "0QT9qVUEAGHgO7eL",
+          "name": "Bearer Auth account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get Voice File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Angie, AI Assistant 👩🏻‍🏫",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Voice or Text": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Voice File": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Angie, AI Assistant 👩🏻‍🏫",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Listen for incoming events": {
+      "main": [
+        [
+          {
+            "node": "Send Typing action",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Voice or Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Angie, AI Assistant 👩🏻‍🏫": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Angie, AI Assistant 👩🏻‍🏫",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Angie, AI Assistant 👩🏻‍🏫",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Gmail",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Labels": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Gmail",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Emails": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Gmail",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply Email": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Gmail",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Draft": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Gmail",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email MCP Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Angie, AI Assistant 👩🏻‍🏫",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calender Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Angie, AI Assistant 👩🏻‍🏫",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "75f3be53-1485-4074-8369-1929af2261e8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ea1fe655b307855c28b6328df20e1d82406ba38285e4e604b833c57ef1e59a7b"
+  },
+  "id": "ThmbVJKdbvN2g0zJ",
+  "tags": []
+}
